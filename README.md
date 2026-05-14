@@ -45,3 +45,15 @@ export SCRAPFLY_API_KEY="your-api-key"
 ```
 
 Get your API key at [scrapfly.io](https://scrapfly.io).
+
+## Shell-tool agents (Claude Code, Codex, Aider, ...)
+
+The skills above teach agents to write Python that calls the Scrapfly SDK.
+If your agent runs shell commands instead of Python, install the CLI skill:
+
+```bash
+npx skills add scrapfly/scrapfly-cli
+```
+
+That ships a single `scrapfly-cli` skill plus the [`scrapfly` CLI](https://github.com/scrapfly/scrapfly-cli):
+a JSON-on-stdout binary covering every Scrapfly product from one shell verb.
