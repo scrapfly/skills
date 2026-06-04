@@ -80,7 +80,31 @@ Pre-trained models for common data types. Returns standardized schemas with qual
 - `"vehicle_ad_listing"` - Vehicle search/list results
 
 #### 3. Custom Templates
-Structured extraction rules for consistent parsing across similar pages. Can be defined inline or stored on Scrapfly for reuse.
+Structured extraction rules for consistent parsing across similar pages. Can be defined inline (a JSON object), or stored on Scrapfly and referenced by slug.
+
+##### Saved Templates (reference by slug)
+
+If you have saved a template in the Scrapfly dashboard (Extraction API → Templates), pass its slug as a plain string. The platform resolves it to the currently-published version and applies it:
+
+```python
+result = client.extract(ExtractionConfig(
+    body=html_content,
+    content_type="text/html",
+    url="https://example.com/product/1",
+    extraction_template="product-card",
+))
+```
+
+Saved templates support:
+- A full version history with a separate publish pointer (publish a new version atomically; roll back at any time).
+- Optional URL scope (`match_domain` / `match_path`) configured in the dashboard. Calls against non-matching URLs return `ERR::EXTRACTION::TEMPLATE_URL_MISMATCH`.
+- Cache-on-read with a 60-second TTL: a newly-published version becomes live within one minute, no client redeployment needed.
+
+The slug shape is lowercase letters / digits / dashes, 3 to 128 characters. See [Saved Extraction Templates](https://scrapfly.io/docs/extraction-api/templates) for the dashboard workflow.
+
+##### Inline Template
+
+Pass a Python dict to extract once without saving. Useful for one-off scripts and for templates that vary per call.
 
 ```python
 extraction_template = {

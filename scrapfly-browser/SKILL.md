@@ -326,6 +326,54 @@ The Cloud Browser automatically manages browser fingerprinting:
 - User-Agent, device metrics, timezone, locale (based on `country`)
 - WebGL and Canvas fingerprint emulation
 - HTTP/2 fingerprints
+
+## BYOP (Bring Your Own Proxy) Exit Peers
+
+For sites that allow-list the customer's own corporate IP range (vendor
+portals, supplier extranets, internal apps behind a VPN), the customer
+can run a `scrapfly-byop-connector` binary inside their network and
+route browser traffic out of that machine's egress IP.
+
+How a Cloud Browser session opts in:
+
+```python
+config = ScrapeConfig(
+    url="https://allow-listed-portal.example.com/login",
+    render_js=True,
+    cloud_browser=CloudBrowserConfig(
+        # Format: socks5h://proxy-<short_id>:<api_key>@proxy.scrapfly.io:1080
+        byop_proxy=f"socks5h://proxy-{short_id}:{api_key}@proxy.scrapfly.io:1080",
+    ),
+)
+```
+
+Note: the SDK exposure (`byop_proxy=...` field on `CloudBrowserConfig`)
+is not yet implemented in any SDK. Today the field works at the API
+layer; SDK callers must construct the wss:// URL by hand. Tracking row:
+[sdk/integration/matrix.yaml](../../../sdk/integration/matrix.yaml) id
+`cloud_browser.byop_proxy_url`. Customer doc:
+[docs/rpa/exit-peers](https://scrapfly.io/docs/rpa/exit-peers).
+
+When to use BYOP:
+
+- The target site allow-lists IPs and only the customer's range is on the list.
+- Compliance or audit requires the customer to control their own egress.
+- HIPAA / PHI workflows where the patient-portal session must stay inside the customer's TLS boundary.
+
+How customers install the connector:
+
+```sh
+# One-liner. Auto-detects OS/arch, downloads binary + 7-day cert, unpacks under ~/.scrapfly/byop
+curl -fsSL "https://scrapfly.io/install/byop-connector.sh?api_key=YOUR_API_KEY" | sh
+
+# Or via the CLI (same end state)
+scrapfly exit-peer install
+scrapfly exit-peer run --name $(hostname)
+scrapfly exit-peer status
+```
+
+After the connector is running, the dashboard at `/dashboard/rpa/exit-peers` shows it with a green Live badge and a `proxy-<short_id>` you can wire into an RPA Profile (`kind: byop`, `connector: proxy-<short_id>`). Any workflow or AI agent run that uses that profile routes browser traffic out through the customer's machine.
+
 ## Important Notes
 
 - **Always use `connect_over_cdp()`** (not `connect()`) to connect to the Cloud Browser
@@ -334,6 +382,6 @@ The Cloud Browser automatically manages browser fingerprinting:
 - **Do NOT set fingerprint overrides** (user agent, viewport, timezone, etc.) - they are managed automatically
 - Sessions expire after 1 hour of inactivity
 - Maximum session duration is 30 minutes (1800 seconds)
-- Maximum file download size is 25 MB per file
+- Maximum file download size is 100 MB per file
 - Start with `proxy_pool=datacenter`, upgrade to `residential` only when needed for anti-bot bypass
 - Use `debug=true` for session video recording when troubleshooting
