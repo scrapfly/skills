@@ -274,6 +274,43 @@ For CSS/XPath/axNodeId the CLI goes through Antibot on Scrapfly's browser.
 | `browser playback <run-id>` | Fetch playback metadata for a debug run |
 | `browser extensions list \| get <id> \| upload <path> \| delete <id>` | Manage account browser extensions (`.zip`/`.crx`) |
 
+### Human takeover (VNC / WebRTC) and credential vault
+
+These flags work on `browser`, `browser start`, and `browser execute`:
+
+| Flag | Purpose |
+|---|---|
+| `--vault NAME --vault-key B64KEY` | Attach a credential vault; items are decrypted and pushed over CDP before the session yields. The key is yours alone, Scrapfly never stores it, and omitting it fails the session with `ERR::BROWSER::VAULT_KEY_INVALID` |
+| `--enable-vnc --vnc-password PW` | Expose the session over VNC so a human can take over |
+| `--enable-rtc --rtc-password PW [--rtc-username U]` | Expose the session over WebRTC live video (username defaults to `scrapfly`) |
+| `--hitl-allowed-network IP\|CIDR` | Trust a source range to attach with no credentials (repeatable). This REPLACES the password requirement, it does not add to it, and the server then generates its own secret |
+| `browser salt` | Print the project salt, `sha256(api_key)[:8]` |
+
+**Which VNC password a viewer types depends on the endpoint.** Scrapfly prefixes
+your project salt at allocation, and the two endpoints check it differently:
+
+| Endpoint | Password to type |
+|---|---|
+| Native client on the TCP mux, `vnc://<run_id>@<host>:5901` | `<project_salt>-<vnc_password>` |
+| WebSocket, `wss://<host>/run/<run_id>/vnc` | the raw `<vnc_password>` |
+
+The mux keys its DES challenge on the salted form (native clients do not strip
+it), so two customers who pick the same password never collide; the WebSocket
+handler strips the salt server-side before the same check. `browser start`
+prints the TCP URL and the salted password that goes with it:
+
+```bash
+scrapfly browser --session demo --enable-vnc --vnc-password hunter2 start &
+# [session demo] vnc vnc://01K5Z.../@browser.scrapfly.io:5901
+# [session demo] vnc password 06f679de-hunter2
+```
+
+The `vnc://` username is the run id, which only exists once the session is
+allocated, so `browser start` prints the URL after it connects. In ws mode
+(`scrapfly browser --enable-vnc --vnc-password PW`) the JSON envelope carries
+`project_salt`, `vnc_password` (salted), and `vnc_url` with a `{run_id}`
+placeholder.
+
 ## Crawler reference
 
 ### Submit + poll
