@@ -1,0 +1,13 @@
+{
+  "name": "scrapfly",
+  "version": "1.0.0",
+  "description": "Official Scrapfly plugin for Grok (MCP Server + Skills). Scrape any site with anti-bot bypass and JS rendering, capture screenshots, extract structured data with AI, crawl entire sites, and drive cloud browsers.",
+  "author": {
+    "name": "Scrapfly",
+    "url": "https://scrapfly.io"
+  },
+  "homepage": "https://scrapfly.io/docs/mcp/getting-started",
+  "repository": "https://github.com/scrapfly/skills",
+  "keywords": ["scrapfly", "scraping", "extraction", "screenshot", "crawler", "mcp"],
+  "skills": "./skills/"
+}
