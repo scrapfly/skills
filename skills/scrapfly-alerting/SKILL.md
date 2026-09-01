@@ -216,7 +216,7 @@ Server-side defaults fill in when zero values are sent:
 - `sustained_minutes`: the metric family's recommended default (or 5)
 - `evaluation_window_m`: `sustained_minutes`
 - `no_data_policy`: `ignore`
-- `renotify_minutes`: 60
+- `renotify_minutes`: 0 (notify once, never re-notify)
 - `recovery_minutes`: 0 (instant recovery)
 
 Other endpoints follow the same shape: `GET /alert`, `GET
@@ -237,7 +237,8 @@ Each channel has a `kind` and a `target`:
 | `inapp` | empty string | Surfaces in the dashboard's bell-icon notification panel. |
 
 The dedup layer suppresses re-fires that fall in the same minute
-bucket. The renotify cadence (`renotify_minutes`, default 60) controls
+bucket. The renotify cadence (`renotify_minutes`, default 0, meaning notify
+once and never re-notify) controls
 how often a sustained breach re-notifies, capped at 6 / day per alert.
 
 ## State machine
