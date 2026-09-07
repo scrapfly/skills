@@ -42,8 +42,8 @@ account behavior, then validate against history before committing.
   depends on is Enterprise-only).
 - The customer's account must have the **ALERTING** feature flag
   granted. Customers without the
-  `permanent:feature_flag:alerting` tag will see a 403 on write
-  endpoints; read endpoints stay accessible to staff for triage.
+  flag get a 403 on every alert write (create, update, delete,
+  snooze, unsnooze, test); reads still work. Ask support to enable it.
 - A valid Scrapfly API key (`scp-live-...`). The MCP and CLI surfaces
   resolve project context from the api-key — pass `--project-uuid` /
   `project_uuid` only when the customer explicitly names a non-default
@@ -135,7 +135,7 @@ calls):
   non-default project; the server resolves the api-key's current
   project automatically.
 - **Always preview before creating.** `alert_preview` uses the same
-  state-machine `Tick()` the live evaluator uses, so the historical
+  state machine the live evaluator runs, so the historical
   count is exactly what production would have produced under the same
   rule. A rule that fired 15 times in the last 24h will spam the
   customer.

@@ -349,9 +349,7 @@ config = ScrapeConfig(
 
 Note: the SDK exposure (`byop_proxy=...` field on `CloudBrowserConfig`)
 is not yet implemented in any SDK. Today the field works at the API
-layer; SDK callers must construct the wss:// URL by hand. Tracking row:
-[sdk/integration/matrix.yaml](../../../sdk/integration/matrix.yaml) id
-`cloud_browser.byop_proxy_url`. Customer doc:
+layer; SDK callers must construct the wss:// URL by hand. Customer doc:
 [docs/rpa/exit-peers](https://scrapfly.io/docs/rpa/exit-peers).
 
 When to use BYOP:

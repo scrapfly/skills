@@ -77,8 +77,8 @@ export SCRAPFLY_API_KEY="scp-live-..."
 
 For the agent-rules skill (`scrapfly-agent-rules`): nothing to install on the
 agent side — the rules assume your agent is connected to a Scrapfly MCP
-server. See [agent-ai](https://github.com/scrapfly/agent-ai) for reference
-ADK bootstraps in Python and Go.
+server. Connection setup for Claude Code, Cursor, Codex and other MCP
+clients: https://scrapfly.io/docs/mcp/getting-started.
 
 Get your API key at [scrapfly.io](https://scrapfly.io).
 

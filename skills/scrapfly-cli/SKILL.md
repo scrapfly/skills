@@ -302,7 +302,7 @@ prints the TCP URL and the salted password that goes with it:
 ```bash
 scrapfly browser --session demo --enable-vnc --vnc-password hunter2 start &
 # [session demo] vnc vnc://01K5Z.../@browser.scrapfly.io:5901
-# [session demo] vnc password 06f679de-hunter2
+# [session demo] vnc password <project_salt>-hunter2
 ```
 
 The `vnc://` username is the run id, which only exists once the session is

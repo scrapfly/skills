@@ -82,7 +82,7 @@ and *in what order*, not how to call any single tool.
    alert_create(..., confirm=true)                           # commit
    ```
 
-   The preview reuses the live evaluator's state-machine `Tick()`, so the
+   The preview reuses the live evaluator's state machine, so the
    historical fire count is exactly what production would produce under the
    same rule. Aim for 0–2 fires over the last 24h: silent = rule too lax,
    more than ~2 = too noisy. **Never** call `alert_create` without a preview
@@ -111,8 +111,8 @@ export SCRAPFLY_API_KEY=scp-live-...
 ```
 
 Reference bootstraps:
-- Python (google/adk-python + mcp) and Go (google/adk-go + go-sdk) agents
-  live at https://github.com/scrapfly/agent-ai.
+- Any MCP-capable agent framework works (google/adk-python + mcp,
+  google/adk-go + go-sdk, or your client's own MCP transport).
 - Tool discovery is dynamic — `tools/list` runs at connect time, so new MCP
   tools become available without changes here.
 
