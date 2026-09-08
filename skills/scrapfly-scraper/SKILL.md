@@ -57,7 +57,7 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `proxy_pool` | str | `"public_datacenter_pool"` | Proxy pool: `"public_datacenter_pool"` or `"public_residential_pool"` |
 | `session` | str | None | Session ID to persist cookies/fingerprint across requests |
 | `session_sticky_proxy` | bool | False | Keep the same proxy IP for a given `session` |
-| `asp` | bool | False | Enable Anti Scraping Protection bypass |
+| `unblocker` | bool | False | Enable the Unblocker anti-bot bypass. `asp` is the permanently supported deprecated alias; when both are supplied, `asp` wins |
 | `render_js` | bool | False | Enable headless browser JavaScript rendering (+5 credits) |
 | `rendering_wait` | int | None | Wait time in ms after page load (requires `render_js=True`) |
 | `rendering_stage` | str | `"complete"` | Browser readiness stage: `"complete"` or `"domcontentloaded"` (requires `render_js=True`) |
@@ -86,7 +86,7 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `lang` | list[str] | None | Accept-Language values, e.g. `["en-US", "en"]` |
 | `os` | str | None | Override browser OS fingerprint, e.g. `"windows"`, `"macos"` |
 | `webhook` | str | None | Named webhook for async scrape completion callbacks |
-| `cost_budget` | int | None | Max credits to spend on ASP retries and extra features |
+| `cost_budget` | int | None | Max credits to spend on unblocker retries and extra features |
 
 ### ScrapeApiResponse
 
@@ -122,7 +122,7 @@ print(result.content)
 ```python
 result = client.scrape(ScrapeConfig(
     url="https://httpbin.dev",
-    asp=True, # enable the asp to bypass antibots
+    unblocker=True, # enable the unblocker to bypass antibots
     country="us", # match the proxy with the domain country
     proxy_pool="public_residential_pool", # use the residential proxy pool to match real ISP IPs
 ))
@@ -306,7 +306,7 @@ from scrapfly.errors import (
 )
 
 try:
-    result = client.scrape(ScrapeConfig(url="https://httpbin.dev", asp=True))
+    result = client.scrape(ScrapeConfig(url="https://httpbin.dev", unblocker=True))
 except ScrapflyThrottleError as e:
     print(f"Rate limited, retry after {e.retry_delay}s")
 except UpstreamHttpClientError as e:
@@ -321,7 +321,8 @@ except ScrapflyError as e:
 
 ## Important Notes
 - `render_js=True` is required for `rendering_wait`, `wait_for_selector`, `js`, `js_scenario`, and `screenshots`
-- `proxy_pool="public_residential_pool"` is recommended when using `asp=True`
+- `proxy_pool="public_residential_pool"` is recommended when using `unblocker=True`
+- `unblocker` is the current name for the anti-bot bypass; `asp` is the deprecated alias and keeps working forever. Only the name changed; the SDK sends `asp` on the wire either way. Do not pass both
 - Use `format="markdown"` for clean content accessible for LLMs
 - Use `session` parameter to maintain state across multiple requests
 - The `concurrent_scrape` method handles rate limiting automatically

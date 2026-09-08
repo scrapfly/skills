@@ -37,7 +37,8 @@ every `ScrapeConfig` field from the SDK:
 
 - Render & navigate: `--render-js`, `--wait-for-selector`, `--rendering-wait`,
   `--rendering-stage`, `--auto-scroll`, `--js-file FILE`, `--js-scenario-file FILE`
-- Anti-bot: `--asp`, `--cost-budget N`, `--proxy-pool`, `--country`, `--geolocation`
+- Anti-bot: `--unblocker` (`--asp` is the deprecated alias and still works),
+  `--cost-budget N`, `--proxy-pool`, `--country`, `--geolocation`
 - Format & extraction: `--format markdown|clean_html|text|raw` + `--format-option`;
   `--extraction-prompt`, `--extraction-model`, `--extraction-template`,
   `--extraction-template-file FILE` (ephemeral inline template)
@@ -83,6 +84,11 @@ scrapfly browser --pretty
 # pre-navigate through /unblock so the target's anti-bot is bypassed
 scrapfly browser https://target.example.com --unblock --country us --pretty
 ```
+
+`browser --unblock` and `scrape --unblocker` are two different products with
+confusingly similar names: `--unblock` opens a Cloud Browser session through
+`POST /unblock`, while `--unblocker` is the anti-bot bypass on a stateless
+`scrape` or `crawl`.
 
 **Path D (Interactive browser - persistent daemon):** keep one CDP session
 open across many CLI calls. Cookies, tabs, and AXTree refs all persist for
@@ -344,7 +350,7 @@ Every documented `CrawlerConfig` field is exposed:
 | `--use-sitemaps` / `--ignore-no-follow` / `--respect-robots-txt true\|false` | strategy |
 | `--cache` / `--cache-ttl S` / `--cache-clear` | caching |
 | `--content-format F` (repeatable) / `--extraction-rules-file PATH` | content + extraction |
-| `--asp` / `--proxy-pool P` / `--country CC` | scraping options |
+| `--unblocker` / `--proxy-pool P` / `--country CC` | scraping options |
 | `--webhook NAME` / `--webhook-event E` (repeatable) | webhooks |
 
 ### Read from a WARC / HAR artifact
@@ -380,8 +386,8 @@ scrapfly crawl parse har-get crawl.har https://example.com/api \
 ## Quick examples
 
 ```bash
-# Scrape a JS-heavy page with anti-bot and markdown output
-scrapfly scrape https://web-scraping.dev/products --render-js --asp --format markdown
+# Scrape a JS-heavy page with the unblocker and markdown output
+scrapfly scrape https://web-scraping.dev/products --render-js --unblocker --format markdown
 
 # Scrape many URLs in parallel (ndjson on stdout, one envelope per line)
 scrapfly scrape https://web-scraping.dev/products \

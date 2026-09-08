@@ -2,7 +2,7 @@
 name: scrapfly-agent-rules
 description: >-
   Cross-tool golden rules for an autonomous Scrapfly web agent connected to the
-  Scrapfly MCP server (web_scrape, screenshot, extract, classify_block, the
+  Scrapfly MCP server (web_scrape, screenshot, check_if_blocked, the
   Cloud Browser lifecycle, snapshot/click/fill/type/press/scroll/select/drag,
   and WebMCP). Use when an LLM agent has access to the Scrapfly MCP toolset
   and needs to choose between stateless scraping and a stateful Cloud Browser
@@ -52,7 +52,12 @@ and *in what order*, not how to call any single tool.
 5. **Recover from soft-blocks via `check_if_blocked`.** After a `web_scrape`
    that looks suspicious (200 + tiny body, challenge markup), call
    `check_if_blocked`; on `is_blocked=true`, retry `web_scrape` with
-   `asp=true`, or escalate to `browser_unblock` for interactive work.
+   `unblocker=true`, or escalate to `browser_unblock` for interactive work.
+   Despite the similar names these are two different products: `unblocker` is
+   a parameter on the stateless scrape, while `browser_unblock` opens a Cloud
+   Browser session through `POST /unblock`. (`asp` is the permanently
+   supported deprecated alias of `unblocker`; both are declared on the tool
+   schema, so pass `unblocker` and never both.)
 
 6. **WebMCP tools beat raw DOM.** When the page exposes WebMCP tools
    (visible in `cloud_browser_open` / `cloud_browser_navigate` output, or via

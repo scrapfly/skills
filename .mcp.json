@@ -3,7 +3,7 @@
     "scrapfly": {
       "type": "http",
       "url": "https://mcp.scrapfly.io/mcp",
-      "note": "Official Scrapfly hosted MCP server. Uses OAuth2 — on first connection the agent is prompted to authorize via browser; tokens are stored and refreshed locally. API-key alternatives (Authorization: Bearer header, or ?key= query parameter) are documented at https://scrapfly.io/docs/mcp/authentication. Tools: web_scrape, screenshot, extract, classify_block, the Cloud Browser session lifecycle, and WebMCP discovery."
+      "note": "Official Scrapfly hosted MCP server. Uses OAuth2 — on first connection the agent is prompted to authorize via browser; tokens are stored and refreshed locally. API-key alternatives (Authorization: Bearer header, or ?key= query parameter) are documented at https://scrapfly.io/docs/mcp/authentication. Tools: web_scrape, screenshot, check_if_blocked, the Cloud Browser session lifecycle, and WebMCP discovery."
     }
   }
 }

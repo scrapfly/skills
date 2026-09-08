@@ -9,7 +9,7 @@ description: >-
 # Scrapfly Rust SDK
 
 Use the `scrapfly-sdk` crate to scrape web pages from Rust with proxy rotation,
-anti-bot bypass (ASP), JavaScript rendering, screenshots, and AI extraction.
+anti-bot bypass (Unblocker), JavaScript rendering, screenshots, and AI extraction.
 The client is async (Tokio) and uses typed builders for every config.
 
 ## When to use
@@ -59,11 +59,11 @@ Chain typed builder methods. `proxy_pool` and `format` take enums.
 use scrapfly_sdk::{Client, ScrapeConfig, Format, ProxyPool};
 
 let config = ScrapeConfig::builder("https://web-scraping.dev/products")
-    .asp(true)                                   // bypass anti-bot
+    .unblocker(true)                             // bypass anti-bot
     .country("us")                               // proxy country (ISO 3166-1 alpha-2)
     .proxy_pool(ProxyPool::PublicResidentialPool) // or PublicDatacenterPool
     .render_js(true)                             // headless browser rendering
-    .wait_for_selector("div.product")           // requires render_js
+    .wait_for_selector("div.product")            // requires render_js
     .rendering_wait(5000)                        // ms, requires render_js
     .format(Format::Markdown)                    // clean, LLM-friendly content
     .build()?;
@@ -111,7 +111,12 @@ while let Some(result) = stream.next().await {
 ## Important notes
 
 - `render_js(true)` is required for `rendering_wait`, `wait_for_selector`, and screenshots
-- `ProxyPool::PublicResidentialPool` is recommended alongside `asp(true)`
+- `ProxyPool::PublicResidentialPool` is recommended alongside `unblocker(true)`
+- `unblocker(true)` is the current builder input for the anti-bot bypass;
+  `asp(true)` is the deprecated alias and keeps working forever. Only the name
+  changed; the SDK sends `asp` on the wire either way. Call one, not both; an
+  explicitly supplied `asp` wins. On a built `ScrapeConfig`, read it with
+  `unblocker_enabled()` and write it with `set_unblocker(bool)`
 - Use `Format::Markdown` for clean, LLM-friendly content
 - Read the page body via `result.result.content`; the upstream HTTP status is `result.result.status_code`
 - The crate bundles no HTML parser — bring your own (`scraper`, `kuchiki`)

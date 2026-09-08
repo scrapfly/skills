@@ -57,7 +57,7 @@ from scrapfly import (
 | `allowed_external_domains` | list[str] | None | Whitelist of external domains when `follow_external_links=True` (supports `*`, max 250) |
 | `headers` | dict | None | Custom HTTP headers as JSON object |
 | `delay` | int | None | Delay between requests in milliseconds (0-15000) |
-| `user_agent` | str | None | Custom User-Agent string (ignored when `asp=True`) |
+| `user_agent` | str | None | Custom User-Agent string (ignored when `unblocker=True`) |
 | `max_concurrency` | int | None | Maximum concurrent crawl requests |
 | `rendering_delay` | int | None | Wait time in ms after page load before extraction (0-25000). `0` disables browser rendering |
 | `use_sitemaps` | bool | False | Discover URLs from `sitemap.xml` when available |
@@ -68,7 +68,7 @@ from scrapfly import (
 | `cache_clear` | bool | False | Force refresh of cached pages |
 | `content_formats` | list[str] | None | Content formats to extract: `html`, `clean_html`, `markdown`, `text` |
 | `extraction_rules` | dict | None | Custom extraction rules for structured data |
-| `asp` | bool | False | Enable Anti Scraping Protection with browser rendering |
+| `unblocker` | bool | False | Enable the Unblocker anti-bot bypass with browser rendering. `asp` is the permanently supported deprecated alias; when both are supplied, `asp` wins |
 | `proxy_pool` | str | None | Proxy pool to use (e.g., `public_residential_pool`) |
 | `country` | str | None | Proxy country selection (ISO code) |
 | `webhook_name` | str | None | Name of webhook configured in dashboard |
@@ -183,7 +183,7 @@ crawl = Crawl(client, config).crawl().wait()
 config = CrawlerConfig(
     url='https://web-scraping.dev',
     page_limit=50,
-    asp=True,
+    unblocker=True,
     content_formats=['html'],
 )
 crawl = Crawl(client, config).crawl().wait()

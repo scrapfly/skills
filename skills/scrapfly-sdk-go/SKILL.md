@@ -10,7 +10,7 @@ description: >-
 # Scrapfly Go SDK
 
 Use the `go-scrapfly` module to scrape web pages from Go with proxy rotation,
-anti-bot bypass (ASP), JavaScript rendering, screenshots, and AI extraction.
+anti-bot bypass (Unblocker), JavaScript rendering, screenshots, and AI extraction.
 It ships a built-in `goquery` selector for parsing the response.
 
 ## When to use
@@ -62,18 +62,19 @@ func main() {
 ## Anti-bot bypass, geo-targeting, JS rendering
 
 `ScrapeConfig` fields are Go-idiomatic PascalCase. `ProxyPool` takes a typed
-constant.
+constant. `Unblocker` is a `*bool` (nil = unset), so set it with the
+`scrapfly.BoolPtr` helper.
 
 ```go
 apiResponse, err := client.Scrape(&scrapfly.ScrapeConfig{
     URL:             "https://web-scraping.dev/product/1",
-    ASP:             true,                            // bypass anti-bot
-    Country:         "us",                            // proxy country (ISO 3166-1 alpha-2)
-    ProxyPool:       scrapfly.PublicResidentialPool,  // or scrapfly.PublicDataCenterPool
-    RenderJS:        true,                            // headless browser rendering
+    Unblocker:       scrapfly.BoolPtr(true),         // bypass anti-bot
+    Country:         "us",                           // proxy country (ISO 3166-1 alpha-2)
+    ProxyPool:       scrapfly.PublicResidentialPool, // or scrapfly.PublicDataCenterPool
+    RenderJS:        true,                           // headless browser rendering
     WaitForSelector: "div.product",                  // requires RenderJS
-    RenderingWait:   5000,                            // ms, requires RenderJS
-    Format:          "markdown",                      // raw | clean_html | json | markdown | text
+    RenderingWait:   5000,                           // ms, requires RenderJS
+    Format:          "markdown",                     // raw | clean_html | json | markdown | text
 })
 ```
 
@@ -104,6 +105,10 @@ data, err := client.Extract(&scrapfly.ExtractionConfig{
 ## Important notes
 
 - `RenderJS: true` is required for `RenderingWait`, `WaitForSelector`, and screenshots
-- `scrapfly.PublicResidentialPool` is recommended alongside `ASP: true`
+- `scrapfly.PublicResidentialPool` is recommended alongside `Unblocker: scrapfly.BoolPtr(true)`
+- `Unblocker` (`*bool`) is the current name for the anti-bot bypass; the plain
+  `bool` field `ASP` is the deprecated alias and keeps working forever. Only the
+  name changed; the SDK sends `asp` on the wire either way. Set one, not both;
+  an explicit `ASP: true` wins over `Unblocker`
 - Use `Format: "markdown"` for clean, LLM-friendly content
 - Read the page body via `apiResponse.Result.Content`; parse with `apiResponse.Selector()`

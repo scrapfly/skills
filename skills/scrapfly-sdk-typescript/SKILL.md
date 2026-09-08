@@ -10,7 +10,7 @@ description: >-
 # Scrapfly TypeScript SDK
 
 Use the `scrapfly-sdk` package to scrape web pages from TypeScript/JavaScript
-with proxy rotation, anti-bot bypass (ASP), JavaScript rendering, screenshots,
+with proxy rotation, anti-bot bypass (Unblocker), JavaScript rendering, screenshots,
 and AI extraction. Runs on Node.js, Deno, Bun, and edge runtimes
 (Cloudflare Workers, AWS Lambda).
 
@@ -54,7 +54,7 @@ console.log(result.result.content);
 const result = await client.scrape(
     new ScrapeConfig({
         url: 'https://web-scraping.dev/products',
-        asp: true,                          // bypass anti-bot
+        unblocker: true,                    // bypass anti-bot
         country: 'us',                      // proxy country (ISO 3166-1 alpha-2)
         proxy_pool: 'public_residential_pool',
         render_js: true,                    // headless browser rendering
@@ -105,7 +105,11 @@ for await (const result of client.concurrentScrape(configs)) {
 ## Important notes
 
 - `render_js: true` is required for `rendering_wait`, `wait_for_selector`, and screenshots
-- `proxy_pool: 'public_residential_pool'` is recommended alongside `asp: true`
+- `proxy_pool: 'public_residential_pool'` is recommended alongside `unblocker: true`
+- `unblocker` is the current name for the anti-bot bypass; `asp` is the
+  deprecated alias and keeps working forever. Only the name changed; the SDK
+  sends `asp` on the wire either way. Pass one, not both; an explicitly supplied
+  `asp` wins over `unblocker`
 - Use `format: 'markdown'` for clean, LLM-friendly content
 - The API key is read from the `key` constructor option (pass `process.env.SCRAPFLY_API_KEY`)
 - Read the page body via `result.result.content`

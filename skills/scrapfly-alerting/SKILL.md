@@ -5,8 +5,9 @@ description: >-
   "alert me when scrape success rate drops below 95% for 10 minutes" and
   receive notifications via email, webhook, or in-app. Use when the user
   asks to "set up an alert", "monitor my scrape success rate", "tell me
-  when my scrapes start failing", "alert on ASP block rate", "watch a
-  specific domain", or any task involving the Scrapfly alerting product.
+  when my scrapes start failing", "alert on unblocker block rate", "alert
+  on ASP block rate", "watch a specific domain", or any task involving the
+  Scrapfly alerting product.
   Covers the three call paths: REST API, MCP `alert_*` tools, and the
   `scrapfly alert` CLI subcommand. Enterprise plan feature; GATED behind
   the ALERTING feature flag on customer accounts.
@@ -60,7 +61,12 @@ each step grounds the next.
    domain, fetch its breakdown.
 3. **List metric families** — the Alerting registry tells you the legal
    `metric_id` values and their `allowed_dimensions`. Never invent a
-   metric ID; always pick from the registry.
+   metric ID; always pick from the registry. Unblocker errors are
+   `scrape.unblocker_errors_per_min`. An existing alert may still carry a
+   metric ID the listing no longer offers — `scrape.asp_errors_per_min` is
+   the pre-rename ID of that same metric. Those alerts keep working and
+   keep their ID; do not try to "fix" them, and do not reuse a
+   superseded ID for a new alert.
 4. **Preview the threshold against history** — replay the unsaved rule
    over the lookback window. The preview returns "would-have-fired"
    markers without persisting anything. Aim for **0–2 fires over 24h**:
