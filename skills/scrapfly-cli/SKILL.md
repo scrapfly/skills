@@ -129,8 +129,7 @@ with `?key=<API_KEY>`. Official SDKs: Python, TypeScript, Go, Rust. See
 **Path G (Alerting on account metrics):** `scrapfly alert ...` defines
 threshold rules on Scrapfly's monitoring metrics (success rate, block
 rate, error count, cost, latency, ...) and routes notifications via
-email, webhook, or in-app. Enterprise plan; GATED behind the ALERTING
-feature flag on customer accounts.
+email, webhook, or in-app. Enterprise plan.
 
 ```bash
 # Discover legal metrics

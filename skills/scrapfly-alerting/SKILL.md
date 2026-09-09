@@ -9,8 +9,7 @@ description: >-
   on ASP block rate", "watch a specific domain", or any task involving the
   Scrapfly alerting product.
   Covers the three call paths: REST API, MCP `alert_*` tools, and the
-  `scrapfly alert` CLI subcommand. Enterprise plan feature; GATED behind
-  the ALERTING feature flag on customer accounts.
+  `scrapfly alert` CLI subcommand. Enterprise plan feature.
 ---
 
 # Scrapfly Alerting
@@ -41,10 +40,6 @@ account behavior, then validate against history before committing.
 
 - Enterprise plan (the Monitoring API the threshold-discovery flow
   depends on is Enterprise-only).
-- The customer's account must have the **ALERTING** feature flag
-  granted. Customers without the
-  flag get a 403 on every alert write (create, update, delete,
-  snooze, unsnooze, test); reads still work. Ask support to enable it.
 - A valid Scrapfly API key (`scp-live-...`). The MCP and CLI surfaces
   resolve project context from the api-key — pass `--project-uuid` /
   `project_uuid` only when the customer explicitly names a non-default
