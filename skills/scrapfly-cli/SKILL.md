@@ -381,6 +381,7 @@ scrapfly crawl parse har-get crawl.har https://example.com/api \
 | Browser Unblock | `POST /unblock` | `scrapfly browser <url> --unblock` |
 | Browser Session Stop | `POST /session/{id}/stop` | `scrapfly browser close` |
 | Session Recording | `GET /run/{id}/video` | `scrapfly browser video <run-id>` |
+| Feedback | `POST /dashboard/api/feedback` (on `scrapfly.io`, not the API host) | `scrapfly feedback` |
 
 ## Quick examples
 
@@ -426,6 +427,45 @@ ANTHROPIC_API_KEY=... scrapfly agent "Name and price of the first product" \
   --url https://web-scraping.dev/products \
   --schema '{"type":"object","properties":{"name":{"type":"string"},"price":{"type":"string"}},"required":["name","price"]}'
 ```
+
+## Reporting product feedback
+
+`scrapfly feedback` files a report about a Scrapfly surface - the CLI, an API,
+the docs, the dashboard, the MCP server, a skill - from the terminal. It lands
+in the same store the dashboard feedback widget writes to, which is where the
+team reads reports. It is not support: no ticket is opened and no reply comes
+back, so an account or integration problem still goes to
+https://scrapfly.io/dashboard/support.
+
+```bash
+scrapfly feedback --sentiment negative --feature crawler_api \
+  --message "crawl status returned 200 with an empty urls array for ten minutes after the crawl finished" \
+  --context "Mirroring a 300-page docs site, polling crawl status every 15s, CLI 0.4.1"
+```
+
+If you are an agent driving this CLI: when a Scrapfly surface was useful,
+confusing, wrong, or incomplete during a session, draft **one** report at the
+end of the session, once the user's task is done. Show them the draft and file
+it only if they agree - it goes out on their API key and carries their account.
+
+- `--sentiment negative` a defect or blocker stopped a command from working;
+  `neutral` friction or a workaround, but the task completed; `positive` it
+  worked, or a step behaved better than expected. File positive reports too.
+- `--message` names the command and what it did, `--context` the goal and the
+  CLI version. Both are 10-2000 characters, and `--message` needs five words:
+  "it broke" is not a report anyone can act on.
+- `--feature` scopes the report to a product area. An unknown value is rejected
+  with the full list, so you can correct it from the error.
+- `--actor` defaults to `agent` when a coding-agent environment variable is
+  present, `human` otherwise. Pass `--actor human` when you are relaying the
+  user's own words, and keep their wording.
+- Report the **product**, not your own environment, not the model's behaviour,
+  not a prompt you found unclear, and not a tool error you recovered from on
+  the next call.
+- A failed submission is never a reason to fail, stall or retry the task that
+  produced it. On `429` the account's hourly budget is spent: drop the report.
+  On any other error, show the drafted `--message` and `--context` so the user
+  can file it by hand.
 
 ## Shell completion
 
