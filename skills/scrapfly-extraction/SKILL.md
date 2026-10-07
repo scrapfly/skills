@@ -100,7 +100,7 @@ Saved templates support:
 - Optional URL scope (`match_domain` / `match_path`) configured in the dashboard. Calls against non-matching URLs return `ERR::EXTRACTION::TEMPLATE_URL_MISMATCH`.
 - Cache-on-read with a 60-second TTL: a newly-published version becomes live within one minute, no client redeployment needed.
 
-The slug shape is lowercase letters / digits / dashes, 3 to 128 characters. See [Saved Extraction Templates](https://scrapfly.io/docs/extraction-api/templates) for the dashboard workflow.
+The slug shape is lowercase letters / digits / dashes, 3 to 128 characters.
 
 ##### Inline Template
 

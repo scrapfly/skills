@@ -194,7 +194,9 @@ except ScrapflyError as e:
 ## Important Notes
 
 - The `image` attribute on the response contains the raw binary image data
-- Use `format="png"` for pixel-perfect screenshots; `"jpg"` for smaller file sizes
+- The browser captures JPEG, so `"jpg"` (the default) is the only format that is not
+  re-encoded; `"png"`, `"webp"` and `"gif"` are converted from that capture and are not
+  pixel-perfect sources
 - `auto_scroll=True` is recommended for `capture="fullpage"` to trigger lazy-loaded images
 - `block_banners` removes cookie consent banners and overlay popups
 - `rendering_wait` default is 1000ms; increase for JS-heavy pages

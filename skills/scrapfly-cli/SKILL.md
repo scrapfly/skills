@@ -59,7 +59,7 @@ every `ScrapeConfig` field from the SDK:
 **Path B (Binary / structured outputs):** dedicated commands for focused
 products.
 
-- `scrapfly screenshot <url>` - PNG/JPG/WebP of the page or a selector.
+- `scrapfly screenshot <url>` - JPG (default), PNG, WebP or GIF of the page or a selector.
   Full `ScreenshotConfig` surface: `--format`, `--capture`, `--resolution`,
   `--country`, `--option`, `--wait-for-selector`, `--rendering-wait`,
   `--auto-scroll`, `--js-file`, `--cache`, `--cache-ttl`, `--cache-clear`,

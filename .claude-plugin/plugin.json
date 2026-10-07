@@ -16,7 +16,6 @@
     "./skills/scrapfly-cli",
     "./skills/scrapfly-crawler",
     "./skills/scrapfly-extraction",
-    "./skills/scrapfly-rpa",
     "./skills/scrapfly-scraper",
     "./skills/scrapfly-screenshot",
     "./skills/scrapfly-sdk-go",
