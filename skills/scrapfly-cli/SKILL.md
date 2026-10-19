@@ -37,8 +37,9 @@ every `ScrapeConfig` field from the SDK:
 
 - Render & navigate: `--render-js`, `--wait-for-selector`, `--rendering-wait`,
   `--rendering-stage`, `--auto-scroll`, `--js-file FILE`, `--js-scenario-file FILE`
-- Anti-bot: `--unblocker` (`--asp` is the deprecated alias and still works),
-  `--cost-budget N`, `--proxy-pool`, `--country`, `--geolocation`
+- Proxy pool & anti-bot: `--unblocker-ultra` (alias `--asp`), `--unblocker`,
+  `--proxy-pool basic|unblocker|unblocker_ultra|auto`, `--cost-budget N`,
+  `--country`, `--geolocation`
 - Format & extraction: `--format markdown|clean_html|text|raw` + `--format-option`;
   `--extraction-prompt`, `--extraction-model`, `--extraction-template`,
   `--extraction-template-file FILE` (ephemeral inline template)
@@ -55,6 +56,32 @@ every `ScrapeConfig` field from the SDK:
   (ndjson on stdout)
 - Pipe-friendly: `--proxified` streams the raw upstream body with no JSON
   envelope
+
+When a site blocks, `--unblocker-ultra` is the flag to use
+(`proxy_pool=unblocker_ultra`): it is never refused, and costs the same as
+`--unblocker` except on a target or anti-bot protection with a price of its
+own, which it adds. `--unblocker` (`proxy_pool=unblocker`, residential proxies
+and the Unblocker) is refused there with `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED`
+(HTTP 422, not billed), and the error envelope then carries the hint
+`retry with --unblocker-ultra`. `--proxy-pool basic` (datacenter proxies,
+Unblocker off) suits a site datacenter proxies get through. `--proxy-pool auto`
+lets the API pick the pool before the request, from the target's profile: the
+Unblocker on datacenter proxies, or the pool the target needs. It is accepted
+on every target, the ones that require `unblocker_ultra` included, where their
+price is added, and is priced as the pool it runs on. A `--proxy-pool` word
+wins over the flags, `--unblocker-ultra` over `--unblocker`, and `--asp` is an
+alias of `--unblocker-ultra`; any other `--proxy-pool` value, such as `tor`, is
+sent as given, with `asp=true` when one of the flags is beside it.
+`scrape batch`, `crawl start` and `crawl run` take the same flags.
+
+These flags behave this way from the CLI release after 0.4.1; `scrapfly
+version` prints yours. On 0.4.1 and earlier, `--unblocker` and `--asp` send
+`asp=true` and `--unblocker-ultra` does not exist;
+`--proxy-pool unblocker_ultra` and `--proxy-pool auto` select those pools there
+too. The API's `asp` parameter is deprecated: use `proxy_pool`
+(`unblocker_ultra` for the Unblocker). The
+[migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+requests written before the proxy pools.
 
 **Path B (Binary / structured outputs):** dedicated commands for focused
 products.
@@ -87,8 +114,11 @@ scrapfly browser https://target.example.com --unblock --country us --pretty
 
 `browser --unblock` and `scrape --unblocker` are two different products with
 confusingly similar names: `--unblock` opens a Cloud Browser session through
-`POST /unblock`, while `--unblocker` is the anti-bot bypass on a stateless
-`scrape` or `crawl`.
+`POST /unblock`, while `--unblocker-ultra` or `--unblocker` picks an
+Unblocker pool, the anti-bot bypass of a stateless `scrape` or `crawl`. Cloud
+Browser sessions keep their own pools, `datacenter`, `residential`, `tor` and
+`byop` (`browser --proxy-pool`), and refuse `basic`, `unblocker`,
+`unblocker_ultra` and `auto` with `ERR::BROWSER::CONFIG_ERROR`.
 
 **Path D (Interactive browser - persistent daemon):** keep one CDP session
 open across many CLI calls. Cookies, tabs, and AXTree refs all persist for
@@ -226,11 +256,13 @@ All commands emit a stable JSON envelope on stdout:
 {"success": false, "product": "scrape", "error": {"code": "...", "message": "...", "http_status": 422}}
 ```
 
-Exit code is `0` on success, `1` on any error. `--pretty` swaps JSON for a
-one-line human summary. Binary products (screenshots, crawl artifacts,
-session recordings) require `-o <file>` or `-O <dir>` for the path; without
-either, JSON mode returns base64. `browser content --raw` prints the HTML
-body directly to stdout with no envelope (handy for pipes).
+Exit code is `0` on success, `1` on any error. An error's `hint`, when
+present, is the next step to take, such as `retry with --unblocker-ultra`.
+`--pretty` swaps JSON for a one-line human summary. Binary products
+(screenshots, crawl artifacts, session recordings) require `-o <file>` or
+`-O <dir>` for the path; without either, JSON mode returns base64.
+`browser content --raw` prints the HTML body directly to stdout with no
+envelope (handy for pipes).
 
 ## Browser session reference
 
@@ -349,7 +381,7 @@ Every documented `CrawlerConfig` field is exposed:
 | `--use-sitemaps` / `--ignore-no-follow` / `--respect-robots-txt true\|false` | strategy |
 | `--cache` / `--cache-ttl S` / `--cache-clear` | caching |
 | `--content-format F` (repeatable) / `--extraction-rules-file PATH` | content + extraction |
-| `--unblocker` / `--proxy-pool P` / `--country CC` | scraping options |
+| `--unblocker-ultra` (or `--asp`) / `--unblocker` / `--proxy-pool P` / `--country CC` | `proxy_pool` (`unblocker_ultra` / `unblocker` / `P`, which wins) / `country` |
 | `--webhook NAME` / `--webhook-event E` (repeatable) | webhooks |
 
 ### Read from a WARC / HAR artifact
@@ -386,7 +418,10 @@ scrapfly crawl parse har-get crawl.har https://example.com/api \
 ## Quick examples
 
 ```bash
-# Scrape a JS-heavy page with the unblocker and markdown output
+# A site that blocks: the Unblocker Ultra pool, never refused (CLI release after 0.4.1)
+scrapfly scrape https://web-scraping.dev/products --render-js --unblocker-ultra --format markdown
+
+# Scrape a JS-heavy page through the Unblocker pool with markdown output
 scrapfly scrape https://web-scraping.dev/products --render-js --unblocker --format markdown
 
 # Scrape many URLs in parallel (ndjson on stdout, one envelope per line)
@@ -497,6 +532,13 @@ client (Claude Desktop, Cursor, Claude Code):
   }
 }
 ```
+
+Tool inputs follow the API, not the CLI flags: `proxy_pool` takes `basic`,
+`unblocker`, `unblocker_ultra`, `auto` or `tor`. The `unblocker` and `asp`
+inputs are not the CLI's `--unblocker` and `--asp` flags: they are deprecated,
+use `proxy_pool` (`unblocker_ultra` for the Unblocker). The
+[migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+requests written before the proxy pools.
 
 Selector discovery also works from inside the agent loop via the
 `find_selector` tool - useful when the model wants to produce a durable

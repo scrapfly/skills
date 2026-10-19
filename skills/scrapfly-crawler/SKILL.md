@@ -57,7 +57,7 @@ from scrapfly import (
 | `allowed_external_domains` | list[str] | None | Whitelist of external domains when `follow_external_links=True` (supports `*`, max 250) |
 | `headers` | dict | None | Custom HTTP headers as JSON object |
 | `delay` | int | None | Delay between requests in milliseconds (0-15000) |
-| `user_agent` | str | None | Custom User-Agent string (ignored when `unblocker=True`) |
+| `user_agent` | str | None | Custom User-Agent string. On `proxy_pool="unblocker"`, `"unblocker_ultra"` or `"auto"` the Unblocker stays on and replaces a Chrome User-Agent, any other is sent as is |
 | `max_concurrency` | int | None | Maximum concurrent crawl requests |
 | `rendering_delay` | int | None | Wait time in ms after page load before extraction (0-25000). `0` disables browser rendering |
 | `use_sitemaps` | bool | False | Discover URLs from `sitemap.xml` when available |
@@ -68,8 +68,8 @@ from scrapfly import (
 | `cache_clear` | bool | False | Force refresh of cached pages |
 | `content_formats` | list[str] | None | Content formats to extract: `html`, `clean_html`, `markdown`, `text` |
 | `extraction_rules` | dict | None | Custom extraction rules for structured data |
-| `unblocker` | bool | False | Enable the Unblocker anti-bot bypass with browser rendering. `asp` is the permanently supported deprecated alias; when both are supplied, `asp` wins |
-| `proxy_pool` | str | None | Proxy pool to use (e.g., `public_residential_pool`) |
+| `unblocker` | bool | False | Deprecated: use `proxy_pool` (`"unblocker_ultra"` for the Unblocker). The [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers requests written before the proxy pools. `asp` is its alias; when both are supplied, `asp` wins |
+| `proxy_pool` | str | None | Proxy pool of every crawled page: `"basic"` (datacenter proxies, Unblocker off), `"unblocker"` (residential proxies and the Unblocker), `"unblocker_ultra"` (the same, and the only pool a target or an anti-bot protection with a price of its own accepts) or `"auto"` (the API picks the pool before each request, from the target's profile: the Unblocker on datacenter proxies, or the pool the target needs; accepted on every target, the ones that require `unblocker_ultra` included, where their price is added). Each pool sets the Unblocker itself. Unset, the SDK sends no `proxy_pool`. The [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers the requests written before the proxy pools, the deprecated pool names `public_datacenter_pool` and `public_residential_pool` included |
 | `country` | str | None | Proxy country selection (ISO code) |
 | `webhook_name` | str | None | Name of webhook configured in dashboard |
 | `webhook_events` | list[str] | None | Events to subscribe to (e.g., `crawler_started`, `crawler_url_visited`, `crawler_finished`) |
@@ -183,11 +183,13 @@ crawl = Crawl(client, config).crawl().wait()
 config = CrawlerConfig(
     url='https://web-scraping.dev',
     page_limit=50,
-    unblocker=True,
+    proxy_pool='unblocker',  # residential proxies and the Unblocker on every page
     content_formats=['html'],
 )
 crawl = Crawl(client, config).crawl().wait()
 ```
+
+On a target or an anti-bot protection with a price of its own, `basic` and `unblocker` fail each page with `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED` (HTTP 422, not billed, not retried; a refused seed URL ends the crawl with `seed_url_failed`): run the crawl again with `proxy_pool='unblocker_ultra'`.
 
 ### Crawl with extraction rules
 
@@ -327,6 +329,7 @@ print(f"Progress: {stats['progress_pct']:.1f}%")
 ## Important Notes
 
 - Use `page_limit` to control credit spend on large sites
+- Each page is billed at its proxy pool's price: 1 credit on `basic`, 25 on the Unblocker pools, +5 with browser rendering; `unblocker_ultra` adds the target's or the protection's own price where it has one; `auto` is priced as the pool it runs on
 - Use `include_only_paths` and `exclude_paths` to focus crawls on relevant sections
 - `exclude_paths` and `include_only_paths` are mutually exclusive
 - Crawl jobs are asynchronous - use `Crawl.crawl().wait()` for simple workflows or poll with `client.get_crawl_status()` for more control
