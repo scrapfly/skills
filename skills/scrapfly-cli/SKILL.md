@@ -534,7 +534,8 @@ client (Claude Desktop, Cursor, Claude Code):
 ```
 
 Tool inputs follow the API, not the CLI flags: `proxy_pool` takes `basic`,
-`unblocker`, `unblocker_ultra`, `auto` or `tor`. The `unblocker` and `asp`
+`unblocker`, `unblocker_ultra`, `auto`, `tor` or `public_tor_pool` (the Tor
+pool's name in results). The `unblocker` and `asp`
 inputs are not the CLI's `--unblocker` and `--asp` flags: they are deprecated,
 use `proxy_pool` (`unblocker_ultra` for the Unblocker). The
 [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
