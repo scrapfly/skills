@@ -1,0 +1,10 @@
+{
+  "name": "scrapfly",
+  "version": "1.0.0",
+  "description": "Official Scrapfly extension (MCP Server + Skills). Scrape any site with anti-bot bypass and JS rendering, capture screenshots, extract structured data with AI, crawl entire sites, and drive cloud browsers.",
+  "mcpServers": {
+    "scrapfly": {
+      "httpUrl": "https://mcp.scrapfly.io/mcp"
+    }
+  }
+}

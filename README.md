@@ -34,6 +34,13 @@ npx skills add scrapfly/skills --list
 [`https://github.com/scrapfly/skills`](https://github.com/scrapfly/skills);
 the CLI clones it directly — no Scrapfly account or registry call required.
 
+Gemini CLI can also install the repo as an extension, which adds the hosted
+MCP server alongside the skills:
+
+```bash
+gemini extensions install https://github.com/scrapfly/skills
+```
+
 ## Skills
 
 | Skill | When to use |
@@ -109,3 +116,7 @@ A few examples:
 | OpenCode | `.agents/skills/` | `~/.config/opencode/skills/` |
 
 Full agent matrix: see [`skills` package README](https://www.npmjs.com/package/skills).
+
+## License
+
+[MIT](LICENSE)
