@@ -45,6 +45,7 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `capture` | str | `"viewport"` | Capture scope: `"viewport"`, `"fullpage"`, or a CSS selector/XPath |
 | `resolution` | str | None | Screen dimensions, e.g. `"1920x1080"`, `"375x812"` |
 | `country` | str | None | Proxy country (ISO 3166-1 alpha-2, e.g. `"us"`, `"de"`) |
+| `proxy_pool` | str | None | Proxy pool: `"basic"` (datacenter proxies, Unblocker off), `"unblocker"` (residential proxies and the Unblocker), `"unblocker_ultra"` (the same, and the only pool a target or an anti-bot protection with a price of its own accepts) or `"auto"` (the API picks the pool before the request, from the target's profile: the Unblocker on datacenter proxies, or the pool the target needs; accepted on every target). The Screenshot API takes these four only and ignores any other value; unset, the API's screenshot default applies. The screenshot price is the same on every pool. Available on `ScreenshotConfig` from the scrapfly-sdk release after 0.12.0 |
 | `timeout` | int | None | Total request timeout in milliseconds |
 | `rendering_wait` | int | 1000 | Wait time in ms after page load before capture |
 | `wait_for_selector` | str | None | Wait until this CSS/XPath selector is visible before capture |
@@ -202,3 +203,4 @@ except ScrapflyError as e:
 - `rendering_wait` default is 1000ms; increase for JS-heavy pages
 - `js` parameter content must be base64-encoded and under 16KB
 - Screenshots are stored by Scrapfly and retrievable via URL in the `X-Scrapfly-Screenshot-Url` response header
+- On a target or an anti-bot protection with a price of its own, `proxy_pool="basic"` and `"unblocker"` get `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED` (HTTP 422, not billed): send the screenshot again with `proxy_pool="unblocker_ultra"`

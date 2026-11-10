@@ -48,16 +48,28 @@ and *in what order*, not how to call any single tool.
 4. **`cloud_browser_open` does NOT bypass antibot by default.** Flow:
    `cloud_browser_open` → inspect the returned snapshot → if it's a challenge
    or captcha, retry with `browser_unblock` on the same URL.
+   `cloud_browser_open`'s `proxy_pool` is the Cloud Browser's own datacenter
+   or residential pool, never `basic`, `unblocker`, `unblocker_ultra` or
+   `auto`.
 
 5. **Recover from soft-blocks via `check_if_blocked`.** After a `web_scrape`
    that looks suspicious (200 + tiny body, challenge markup), call
    `check_if_blocked`; on `is_blocked=true`, retry `web_scrape` with
-   `unblocker=true`, or escalate to `browser_unblock` for interactive work.
-   Despite the similar names these are two different products: `unblocker` is
-   a parameter on the stateless scrape, while `browser_unblock` opens a Cloud
-   Browser session through `POST /unblock`. (`asp` is the permanently
-   supported deprecated alias of `unblocker`; both are declared on the tool
-   schema, so pass `unblocker` and never both.)
+   `proxy_pool=unblocker`, or `proxy_pool=auto` to let the API pick the pool
+   from the target's profile, or escalate to `browser_unblock` for
+   interactive work. A target or an anti-bot protection with a price of its
+   own answers `basic` and `unblocker` with
+   `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED` (HTTP 422, not billed): resend with
+   `proxy_pool=unblocker_ultra`. Despite the similar names these are two
+   different products: the Unblocker pools are `proxy_pool` values of the
+   stateless scrape, while `browser_unblock` opens a Cloud Browser session
+   through `POST /unblock`. (`basic`, `unblocker`, `unblocker_ultra` and
+   `auto` need the MCP server release after 1.4.0; the tool's `proxy_pool`
+   schema lists what the connected server takes. The `unblocker` toggle and
+   its alias `asp`, still declared on the tool schema, are deprecated: use
+   `proxy_pool` (`unblocker_ultra` for the Unblocker). The
+   [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+   requests written before the proxy pools.)
 
 6. **WebMCP tools beat raw DOM.** When the page exposes WebMCP tools
    (visible in `cloud_browser_open` / `cloud_browser_navigate` output, or via

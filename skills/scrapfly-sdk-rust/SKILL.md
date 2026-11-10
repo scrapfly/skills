@@ -53,15 +53,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Anti-bot bypass, geo-targeting, JS rendering
 
-Chain typed builder methods. `proxy_pool` and `format` take enums.
+Chain typed builder methods. `proxy_pool` and `format` take enums. The pool
+variants `ProxyPool::Basic`, `ProxyPool::Unblocker`,
+`ProxyPool::UnblockerUltra` and `ProxyPool::Auto` come with scrapfly-sdk 0.6.
+The [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+requests written before the proxy pools.
 
 ```rust
 use scrapfly_sdk::{Client, ScrapeConfig, Format, ProxyPool};
 
 let config = ScrapeConfig::builder("https://web-scraping.dev/products")
-    .unblocker(true)                             // bypass anti-bot
+    .proxy_pool(ProxyPool::Unblocker)            // residential proxies + the Unblocker (anti-bot bypass)
     .country("us")                               // proxy country (ISO 3166-1 alpha-2)
-    .proxy_pool(ProxyPool::PublicResidentialPool) // or PublicDatacenterPool
     .render_js(true)                             // headless browser rendering
     .wait_for_selector("div.product")            // requires render_js
     .rendering_wait(5000)                        // ms, requires render_js
@@ -111,12 +114,26 @@ while let Some(result) = stream.next().await {
 ## Important notes
 
 - `render_js(true)` is required for `rendering_wait`, `wait_for_selector`, and screenshots
-- `ProxyPool::PublicResidentialPool` is recommended alongside `unblocker(true)`
-- `unblocker(true)` is the current builder input for the anti-bot bypass;
-  `asp(true)` is the deprecated alias and keeps working forever. Only the name
-  changed; the SDK sends `asp` on the wire either way. Call one, not both; an
-  explicitly supplied `asp` wins. On a built `ScrapeConfig`, read it with
-  `unblocker_enabled()` and write it with `set_unblocker(bool)`
+- `ProxyPool::Basic` is datacenter proxies with the Unblocker off,
+  `ProxyPool::Unblocker` residential proxies with the Unblocker,
+  `ProxyPool::UnblockerUltra` the same and the only pool a target or an
+  anti-bot protection with a price of its own accepts, and `ProxyPool::Auto`
+  lets the API pick the pool before the request, from the target's profile:
+  the Unblocker on datacenter proxies, or the pool the target needs (accepted
+  on every target, the ones that require `unblocker_ultra` included, where
+  their price is added; priced as the pool it runs on). Each pool sets the
+  Unblocker itself. A target or an anti-bot protection with a price of its own
+  answers `basic` and `unblocker` with `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED`
+  (HTTP 422, not billed): resend with `ProxyPool::UnblockerUltra`. From 0.6,
+  `ScreenshotConfig::builder(..).proxy_pool(..)` takes the same four pools
+- `unblocker(true)` and its alias `asp(true)` are deprecated: use
+  `proxy_pool` (`ProxyPool::UnblockerUltra` for the Unblocker). The
+  [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+  the requests written before the proxy pools, the pool names
+  `ProxyPool::PublicDatacenterPool` and `ProxyPool::PublicResidentialPool`
+  included. An explicitly supplied `asp` wins over `unblocker`; on a built
+  `ScrapeConfig`, read the toggle with `unblocker_enabled()` and write it with
+  `set_unblocker(bool)`
 - Use `Format::Markdown` for clean, LLM-friendly content
 - Read the page body via `result.result.content`; the upstream HTTP status is `result.result.status_code`
 - The crate bundles no HTML parser — bring your own (`scraper`, `kuchiki`)

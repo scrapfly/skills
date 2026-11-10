@@ -54,9 +54,8 @@ console.log(result.result.content);
 const result = await client.scrape(
     new ScrapeConfig({
         url: 'https://web-scraping.dev/products',
-        unblocker: true,                    // bypass anti-bot
+        proxy_pool: 'unblocker',            // residential proxies + the Unblocker (anti-bot bypass)
         country: 'us',                      // proxy country (ISO 3166-1 alpha-2)
-        proxy_pool: 'public_residential_pool',
         render_js: true,                    // headless browser rendering
         wait_for_selector: 'div.product',   // requires render_js
         rendering_wait: 5000,               // ms, requires render_js
@@ -105,11 +104,24 @@ for await (const result of client.concurrentScrape(configs)) {
 ## Important notes
 
 - `render_js: true` is required for `rendering_wait`, `wait_for_selector`, and screenshots
-- `proxy_pool: 'public_residential_pool'` is recommended alongside `unblocker: true`
-- `unblocker` is the current name for the anti-bot bypass; `asp` is the
-  deprecated alias and keeps working forever. Only the name changed; the SDK
-  sends `asp` on the wire either way. Pass one, not both; an explicitly supplied
-  `asp` wins over `unblocker`
+- `proxy_pool` picks the proxy pool: `'basic'` (datacenter proxies, Unblocker
+  off), `'unblocker'` (residential proxies and the Unblocker),
+  `'unblocker_ultra'` (the same, and the only pool a target or an anti-bot
+  protection with a price of its own accepts) or `'auto'` (the API picks the
+  pool before the request, from the target's profile: the Unblocker on
+  datacenter proxies, or the pool the target needs; accepted on every target,
+  the ones that require `unblocker_ultra` included, where their price is
+  added; priced as the pool it runs on). Each pool sets the Unblocker itself.
+  A target or an anti-bot protection with a price of its own answers `basic`
+  and `unblocker` with `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED` (HTTP 422, not
+  billed): resend with `proxy_pool: 'unblocker_ultra'`. `ScreenshotConfig`
+  takes the same `proxy_pool` from the release after 0.12.0
+- `unblocker: true` and its alias `asp` are deprecated: use `proxy_pool`
+  (`'unblocker_ultra'` for the Unblocker). The
+  [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+  the requests written before the proxy pools, the pool names
+  `'public_datacenter_pool'` and `'public_residential_pool'` included. An
+  explicitly supplied `asp` wins over `unblocker`
 - Use `format: 'markdown'` for clean, LLM-friendly content
 - The API key is read from the `key` constructor option (pass `process.env.SCRAPFLY_API_KEY`)
 - Read the page body via `result.result.content`
