@@ -54,10 +54,10 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `timeout` | int | None | Request timeout in ms (default ~150,000ms) |
 | `retry` | bool | True | Auto-retry on network failures |
 | `country` | str | None | Proxy country (ISO 3166-1 alpha-2, e.g. `"us"`, `"de"`) |
-| `proxy_pool` | str | `"public_datacenter_pool"` | Proxy pool: `"public_datacenter_pool"` or `"public_residential_pool"` |
+| `proxy_pool` | str | None | Proxy pool: `"basic"` (datacenter proxies, Unblocker off, 1 credit), `"unblocker"` (residential proxies and the Unblocker anti-bot bypass, 25 credits), `"unblocker_ultra"` (the same, and the only pool a target or an anti-bot protection with a price of its own accepts; that price is added) or `"auto"` (the API picks the pool before the request, from the target's profile: the Unblocker on datacenter proxies, or the pool the target needs; accepted on every target, the ones that require `unblocker_ultra` included, where their price is added; priced as the pool it runs on). Each pool sets the Unblocker itself. Unset, the SDK sends no `proxy_pool`. The [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers the requests written before the proxy pools, the deprecated pool names `"public_datacenter_pool"` and `"public_residential_pool"` included |
 | `session` | str | None | Session ID to persist cookies/fingerprint across requests |
-| `session_sticky_proxy` | bool | False | Keep the same proxy IP for a given `session` |
-| `unblocker` | bool | False | Enable the Unblocker anti-bot bypass. `asp` is the permanently supported deprecated alias; when both are supplied, `asp` wins |
+| `session_sticky_proxy` | bool | True | Keep the same proxy IP for a given `session`; `False` is refused on `"unblocker"`, `"unblocker_ultra"` and `"auto"` |
+| `unblocker` | bool | False | Deprecated: use `proxy_pool` (`"unblocker_ultra"` for the Unblocker). The [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers requests written before the proxy pools. `asp` is its alias; when both are supplied, `asp` wins |
 | `render_js` | bool | False | Enable headless browser JavaScript rendering (+5 credits) |
 | `rendering_wait` | int | None | Wait time in ms after page load (requires `render_js=True`) |
 | `rendering_stage` | str | `"complete"` | Browser readiness stage: `"complete"` or `"domcontentloaded"` (requires `render_js=True`) |
@@ -86,7 +86,7 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `lang` | list[str] | None | Accept-Language values, e.g. `["en-US", "en"]` |
 | `os` | str | None | Override browser OS fingerprint, e.g. `"windows"`, `"macos"` |
 | `webhook` | str | None | Named webhook for async scrape completion callbacks |
-| `cost_budget` | int | None | Max credits to spend on unblocker retries and extra features |
+| `cost_budget` | int | None | Max credits the Unblocker may spend on a request on the `unblocker`, `unblocker_ultra` and `auto` pools |
 
 ### ScrapeApiResponse
 
@@ -122,9 +122,8 @@ print(result.content)
 ```python
 result = client.scrape(ScrapeConfig(
     url="https://httpbin.dev",
-    unblocker=True, # enable the unblocker to bypass antibots
+    proxy_pool="unblocker", # residential proxies and the Unblocker to bypass antibots
     country="us", # match the proxy with the domain country
-    proxy_pool="public_residential_pool", # use the residential proxy pool to match real ISP IPs
 ))
 ```
 
@@ -306,7 +305,7 @@ from scrapfly.errors import (
 )
 
 try:
-    result = client.scrape(ScrapeConfig(url="https://httpbin.dev", unblocker=True))
+    result = client.scrape(ScrapeConfig(url="https://httpbin.dev", proxy_pool="unblocker"))
 except ScrapflyThrottleError as e:
     print(f"Rate limited, retry after {e.retry_delay}s")
 except UpstreamHttpClientError as e:
@@ -319,10 +318,21 @@ except ScrapflyError as e:
     print(f"Scrapfly error: {e.message}")
 ```
 
+A target or an anti-bot protection with a price of its own accepts `proxy_pool="unblocker_ultra"` and `"auto"`, which add that price: `basic` and `unblocker` get `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED` (HTTP 422, not billed). Resend on `unblocker_ultra`:
+
+```python
+try:
+    result = client.scrape(ScrapeConfig(url=url, proxy_pool="unblocker"))
+except ScrapflyError as e:
+    if e.code != "ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED":
+        raise
+    result = client.scrape(ScrapeConfig(url=url, proxy_pool="unblocker_ultra"))
+```
+
 ## Important Notes
 - `render_js=True` is required for `rendering_wait`, `wait_for_selector`, `js`, `js_scenario`, and `screenshots`
-- `proxy_pool="public_residential_pool"` is recommended when using `unblocker=True`
-- `unblocker` is the current name for the anti-bot bypass; `asp` is the deprecated alias and keeps working forever. Only the name changed; the SDK sends `asp` on the wire either way. Do not pass both
+- Pick the proxy pool a site needs: `"basic"` where datacenter proxies get through, `"unblocker"` where it needs residential proxies and the Unblocker, `"unblocker_ultra"` when the API answers `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED`, or `"auto"` to let the API pick it from the target's profile
+- `unblocker=True` and its alias `asp=True` are deprecated: use `proxy_pool` (`"unblocker_ultra"` for the Unblocker). The [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers requests written before the proxy pools
 - Use `format="markdown"` for clean content accessible for LLMs
 - Use `session` parameter to maintain state across multiple requests
 - The `concurrent_scrape` method handles rate limiting automatically
