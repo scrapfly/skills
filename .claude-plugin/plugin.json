@@ -8,6 +8,7 @@
   },
   "homepage": "https://scrapfly.io/docs/mcp/getting-started",
   "repository": "https://github.com/scrapfly/skills",
+  "privacyPolicyUrl": "https://scrapfly.io/privacy-policy",
   "keywords": ["scrapfly", "scraping", "extraction", "screenshot", "crawler", "mcp"],
   "skills": [
     "./skills/scrapfly-agent-rules",
