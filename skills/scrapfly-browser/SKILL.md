@@ -41,7 +41,7 @@ wss://browser.scrapfly.io?api_key=YOUR_API_KEY
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `api_key` | str | **required** | Scrapfly API key |
-| `proxy_pool` | str | `"datacenter"` | Proxy type: `"datacenter"` or `"residential"`. The Web Scraping API words `basic`, `unblocker`, `unblocker_ultra` and `auto` do not apply to the Cloud Browser, which refuses them with `ERR::BROWSER::CONFIG_ERROR` |
+| `proxy_pool` | str | `"datacenter"` | Proxy type: `"datacenter"` or `"residential"` |
 | `os` | str | random | OS fingerprint: `"linux"`, `"windows"`, or `"macos"` |
 | `country` | str | None | Proxy country (ISO 3166-1 alpha-2, e.g. `"us"`, `"de"`) |
 | `session` | str | None | Session ID for browser state persistence |
