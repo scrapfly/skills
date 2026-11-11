@@ -98,8 +98,8 @@ and *in what order*, not how to call any single tool.
    `account.account_id` but **not** the project's UUID. Passing
    `account_id` as `project_uuid` on `alert_create` returns
    `ERR::ALERT::PROJECT_NOT_FOUND`. Leave `project_uuid` and `project_name`
-   empty unless the customer explicitly named a non-default project — the
-   server resolves the api-key's current project automatically.
+   empty: the server uses the api-key's project, the only one the key
+   reaches; an alert of another project needs that project's API key.
 
 ## Setup
 

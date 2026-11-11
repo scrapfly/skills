@@ -41,9 +41,10 @@ account behavior, then validate against history before committing.
 - Enterprise plan (the Monitoring API the threshold-discovery flow
   depends on is Enterprise-only).
 - A valid Scrapfly API key (`scp-live-...`). The MCP and CLI surfaces
-  resolve project context from the api-key — pass `--project-uuid` /
-  `project_uuid` only when the customer explicitly names a non-default
-  project.
+  act in the project of the api-key, the only project a key reaches
+  alerts in: an alert of another project is listed, created or changed
+  with that project's API key, never by passing its `--project-uuid` /
+  `project_uuid`.
 
 ## The golden workflow
 
@@ -87,10 +88,10 @@ side-effect; write tools require `confirm=true` to commit.
 | `monitoring_get_metrics` | read | Per-product aggregates: pick `product` (scrape, screenshot, extraction, crawl, browser), `period` (`last5m`, `last1h`, `last24h`, `last7d`, `subscription`), and optionally `aggregation` (`account`, `project`, `target`). |
 | `monitoring_get_target_metrics` | read | Per-domain breakdown for one site. `domain` is required; `group_subdomain` rolls subdomains together. |
 | `alert_metric_families` | read | Discover legal `metric_id` values + their `allowed_dimensions`. Call before `alert_create`. |
-| `alert_list` | read | List the caller's alerts with optional filters (`state`, `project_uuid`, `metric_id`). |
+| `alert_list` | read | List the alerts of the api-key's project with optional filters (`state`, `metric_id`). |
 | `alert_get` | read | Full alert row including the per-alert HMAC signing key for webhook channels. |
 | `alert_preview` | read | Replay an unsaved rule against history. Use to validate the threshold before `alert_create`. |
-| `alert_create` | write (confirm) | Persist a new alert. Leave `project_uuid` empty to inherit. |
+| `alert_create` | write (confirm) | Persist a new alert in the api-key's project. Leave `project_uuid` empty. |
 | `alert_update` | write (confirm) | Patch fields. Server auto-snoozes for `sustained_minutes` after a successful edit. |
 | `alert_delete` | write (confirm) | Permanent. |
 | `alert_snooze` | write (confirm) | Mute notifications. Pass `minutes:N` OR `until_resolved:true`. |
@@ -132,9 +133,9 @@ calls):
 - **`info_account.account.account_id` is NOT the project UUID.** Do not
   pass it as `project_uuid` — that returns
   `ERR::ALERT::PROJECT_NOT_FOUND`. Leave `project_uuid` and
-  `project_name` empty unless the customer explicitly named a
-  non-default project; the server resolves the api-key's current
-  project automatically.
+  `project_name` empty: the server uses the api-key's project, the only
+  one the key reaches. For an alert of another project, use that
+  project's API key.
 - **Always preview before creating.** `alert_preview` uses the same
   state machine the live evaluator runs, so the historical
   count is exactly what production would have produced under the same
@@ -269,7 +270,7 @@ on `state`):
 - `ERR::ALERT::INVALID_THRESHOLD` — non-finite number, or comparator not in `gt|lt|gte|lte|eq|neq`.
 - `ERR::ALERT::INVALID_SUSTAINED_WINDOW` — `sustained_minutes` outside 1–1440.
 - `ERR::ALERT::CHANNEL_UNREACHABLE` — zero channels OR channel kind not in `email|webhook|inapp` OR a `test` call couldn't deliver to its channel.
-- `ERR::ALERT::PROJECT_NOT_FOUND` — `project_uuid` didn't match the api-key's project. Most often: the agent passed `account_id` here by mistake. Fix: omit the field and let the server fall back.
+- `ERR::ALERT::PROJECT_NOT_FOUND` — `project_uuid` is not the api-key's project: the agent passed `account_id` by mistake, or another project of the account, which a key never reaches. Fix: omit the field, and use the other project's API key for its alerts.
 - `ERR::ALERT::NOT_FOUND` — alert doesn't exist OR isn't yours. The server collapses both cases to prevent enumeration. Don't try to distinguish.
 - `ERR::ALERT::EVAL_TIMEOUT` — the preview/series query took too long. Reduce `range_minutes`.
 - `ERR::ALERT::INTERNAL` — generic server-side failure; check the response body's `details` field.
