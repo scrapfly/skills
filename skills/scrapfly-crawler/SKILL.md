@@ -35,10 +35,9 @@ Additional imports for webhooks:
 ```python
 from scrapfly import (
     webhook_from_payload,
-    CrawlStartedWebhook,
-    CrawlUrlDiscoveredWebhook,
-    CrawlUrlFailedWebhook,
-    CrawlCompletedWebhook,
+    CrawlerLifecycleWebhook,
+    CrawlerUrlDiscoveredWebhook,
+    CrawlerUrlFailedWebhook,
 )
 ```
 
@@ -141,7 +140,7 @@ print(f"Crawler started: {start_response.uuid}")
 while True:
     status = client.get_crawl_status(start_response.uuid)
     print(f"Status: {status.status} - {status.progress_pct:.1f}%")
-    print(f"Crawled: {status.urls_crawled}/{status.urls_discovered} pages")
+    print(f"Crawled: {status.state.urls_visited}/{status.state.urls_extracted} pages")
 
     if status.is_complete:
         break
@@ -307,8 +306,8 @@ with open("llms-full.txt", "w", encoding="utf-8") as f:
 
 ```python
 stats = crawl.stats()
-print(f"URLs discovered: {stats['urls_discovered']}")
-print(f"URLs crawled: {stats['urls_crawled']}")
+print(f"URLs extracted: {stats['urls_extracted']}")
+print(f"URLs visited: {stats['urls_visited']}")
 print(f"Progress: {stats['progress_pct']:.1f}%")
 ```
 

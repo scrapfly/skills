@@ -64,7 +64,7 @@ products.
   `--country`, `--option`, `--wait-for-selector`, `--rendering-wait`,
   `--auto-scroll`, `--js-file`, `--cache`, `--cache-ttl`, `--cache-clear`,
   `--webhook`, `--vision-deficiency`.
-- `scrapfly extract --file page.html --prompt "..."` - run AI/template
+- `scrapfly extract --file page.html --content-type text/html --prompt "..."` - run AI/template
   extraction on a document you already fetched. Full `ExtractionConfig`:
   body via `--file` or stdin; `--content-type`, `--url`, `--charset`,
   `--prompt | --model | --template | --template-file` (one of four
@@ -82,7 +82,7 @@ hand to Playwright, Puppeteer, or `browser-use`:
 scrapfly browser --pretty
 
 # pre-navigate through /unblock so the target's anti-bot is bypassed
-scrapfly browser https://target.example.com --unblock --country us --pretty
+scrapfly browser https://web-scraping.dev/products --unblock --country us --pretty
 ```
 
 `browser --unblock` and `scrape --unblocker` are two different products with
@@ -419,8 +419,8 @@ scrapfly browser content --raw > after-login.html
 scrapfly browser close
 
 # Hand a Scrapfly-unblocked CDP URL to browser-use
-WS=$(scrapfly browser https://target.example.com --unblock --country us --pretty | jq -r .ws_url)
-python examples/browser-use-with-scrapfly.py   # reads WS from scrapfly CLI
+WS=$(scrapfly browser https://web-scraping.dev/products --unblock --country us | jq -r .data.ws_url)
+python examples/browser-use-with-scrapfly.py   # mints its own CDP URL through scrapfly browser
 
 # LLM agent with structured output
 ANTHROPIC_API_KEY=... scrapfly agent "Name and price of the first product" \

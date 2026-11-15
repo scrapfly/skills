@@ -161,12 +161,9 @@ with open("german_version.jpg", "wb") as f:
 Run custom JS before the screenshot (e.g. remove the navbar, cookie modal, or sidebar). Replace the selectors with ones that match your target page—inspect the page in DevTools to find them.
 
 ```python
-import base64
-
 # Example: remove navbar (adjust selector for your page: nav, header, .navbar, etc.)
 
 js_code = "var el = document.querySelector('.navbar-collapse'); if (el) el.remove();"
-js_code = base64.urlsafe_b64encode(js_code.encode('utf-8')).decode('utf-8')
 
 result = client.screenshot(ScreenshotConfig(
     url="https://web-scraping.dev/products",
@@ -200,5 +197,5 @@ except ScrapflyError as e:
 - `auto_scroll=True` is recommended for `capture="fullpage"` to trigger lazy-loaded images
 - `block_banners` removes cookie consent banners and overlay popups
 - `rendering_wait` default is 1000ms; increase for JS-heavy pages
-- `js` parameter content must be base64-encoded and under 16KB
+- `js` takes the raw script (the SDK base64-encodes it); keep it under 16KB
 - Screenshots are stored by Scrapfly and retrievable via URL in the `X-Scrapfly-Screenshot-Url` response header

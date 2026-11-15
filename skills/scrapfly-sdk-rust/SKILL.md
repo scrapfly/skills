@@ -23,6 +23,7 @@ The client is async (Tokio) and uses typed builders for every config.
 
 ```bash
 cargo add scrapfly-sdk
+cargo add tokio --features full
 export SCRAPFLY_API_KEY="your-api-key"
 ```
 

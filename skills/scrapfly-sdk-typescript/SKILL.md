@@ -98,6 +98,10 @@ const configs = [
 ];
 
 for await (const result of client.concurrentScrape(configs)) {
+    if (result instanceof Error || result === undefined) {
+        console.error(result);
+        continue;
+    }
     console.log(result.result.content.slice(0, 100));
 }
 ```
