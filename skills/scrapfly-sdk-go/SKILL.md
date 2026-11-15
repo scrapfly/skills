@@ -61,20 +61,19 @@ func main() {
 
 ## Anti-bot bypass, geo-targeting, JS rendering
 
-`ScrapeConfig` fields are Go-idiomatic PascalCase. `ProxyPool` takes a typed
-constant. `Unblocker` is a `*bool` (nil = unset), so set it with the
-`scrapfly.BoolPtr` helper.
+`ScrapeConfig` fields are Go-idiomatic PascalCase. `ProxyPool` is a typed
+string: pass the pool as a string literal, `"basic"`, `"unblocker"`,
+`"unblocker_ultra"` or `"auto"`, which every go-scrapfly release accepts.
 
 ```go
 apiResponse, err := client.Scrape(&scrapfly.ScrapeConfig{
     URL:             "https://web-scraping.dev/product/1",
-    Unblocker:       scrapfly.BoolPtr(true),         // bypass anti-bot
-    Country:         "us",                           // proxy country (ISO 3166-1 alpha-2)
-    ProxyPool:       scrapfly.PublicResidentialPool, // or scrapfly.PublicDataCenterPool
-    RenderJS:        true,                           // headless browser rendering
-    WaitForSelector: "div.product",                  // requires RenderJS
-    RenderingWait:   5000,                           // ms, requires RenderJS
-    Format:          "markdown",                     // raw | clean_html | json | markdown | text
+    ProxyPool:       "unblocker",   // residential proxies + the Unblocker (anti-bot bypass)
+    Country:         "us",          // proxy country (ISO 3166-1 alpha-2)
+    RenderJS:        true,          // headless browser rendering
+    WaitForSelector: "div.product", // requires RenderJS
+    RenderingWait:   5000,          // ms, requires RenderJS
+    Format:          "markdown",    // raw | clean_html | json | markdown | text
 })
 ```
 
@@ -105,10 +104,25 @@ data, err := client.Extract(&scrapfly.ExtractionConfig{
 ## Important notes
 
 - `RenderJS: true` is required for `RenderingWait`, `WaitForSelector`, and screenshots
-- `scrapfly.PublicResidentialPool` is recommended alongside `Unblocker: scrapfly.BoolPtr(true)`
-- `Unblocker` (`*bool`) is the current name for the anti-bot bypass; the plain
-  `bool` field `ASP` is the deprecated alias and keeps working forever. Only the
-  name changed; the SDK sends `asp` on the wire either way. Set one, not both;
-  an explicit `ASP: true` wins over `Unblocker`
+- `ProxyPool: "basic"` is datacenter proxies with the Unblocker off,
+  `"unblocker"` residential proxies with the Unblocker, `"unblocker_ultra"` the
+  same and the only pool a target or an anti-bot protection with a price of its
+  own accepts, and `"auto"` lets the API pick the pool before the request, from
+  the target's profile: the Unblocker on datacenter proxies, or the pool the
+  target needs (accepted on every target, the ones that require
+  `unblocker_ultra` included, where their price is added; priced as the pool
+  it runs on). Each pool sets the Unblocker itself. A target or an anti-bot
+  protection with a price of its own answers `basic` and `unblocker` with
+  `ERR::PROXY::UNBLOCKER_ULTRA_REQUIRED` (HTTP 422, not billed): resend with
+  `ProxyPool: "unblocker_ultra"`. `ScreenshotConfig.ProxyPool` comes with the
+  go-scrapfly release after v1.6.0
+- `Unblocker` (a `*bool`, set with `scrapfly.BoolPtr(true)`, nil = unset) and
+  its alias, the plain `bool` field `ASP`, are deprecated: use `ProxyPool`
+  (`"unblocker_ultra"` for the Unblocker). The
+  [migration guide](https://scrapfly.io/new-pricing#legacy-spellings) covers
+  the requests written before the proxy pools, the pool names
+  `scrapfly.PublicDataCenterPool` and `scrapfly.PublicResidentialPool`
+  included. Both fields go to the API as `asp`; an explicit `ASP: true` wins
+  over `Unblocker`
 - Use `Format: "markdown"` for clean, LLM-friendly content
 - Read the page body via `apiResponse.Result.Content`; parse with `apiResponse.Selector()`
