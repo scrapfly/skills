@@ -44,6 +44,7 @@ and *in what order*, not how to call any single tool.
 3. **Browsers cost credits continuously.** Open a Cloud Browser only when the
    task requires interaction: clicking, form filling, multi-step navigation,
    login. Close the session when the user says you're done, not before.
+   Each product bills by its own rules: [billing docs](https://scrapfly.io/docs/billing#products).
 
 4. **`cloud_browser_open` does NOT bypass antibot by default.** Flow:
    `cloud_browser_open` → inspect the returned snapshot → if it's a challenge
