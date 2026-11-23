@@ -84,7 +84,7 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `correlation_id` | str | None | Custom ID for request tracking across systems |
 | `tags` | list[str] | None | Custom tags for request organization and analytics |
 | `lang` | list[str] | None | Accept-Language values, e.g. `["en-US", "en"]` |
-| `os` | str | None | Override browser OS fingerprint, e.g. `"windows"`, `"macos"` |
+| `os` | str | None | Choose a browser operating system such as `"win"`, `"mac"`, or `"linux"` |
 | `webhook` | str | None | Named webhook for async scrape completion callbacks |
 | `cost_budget` | int | None | Max credits to spend on unblocker retries and extra features |
 
