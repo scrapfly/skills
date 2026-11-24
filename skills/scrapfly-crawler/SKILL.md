@@ -55,7 +55,7 @@ from scrapfly import (
 | `follow_external_links` | bool | False | Follow links to external domains |
 | `allowed_external_domains` | list[str] | None | Whitelist of external domains when `follow_external_links=True` (supports `*`, max 250) |
 | `headers` | dict | None | Custom HTTP headers as JSON object |
-| `delay` | int | None | Delay between requests in milliseconds (0-15000) |
+| `delay` | int | 100 ms (API) | Pause after each page for each worker. Use 1–15000 ms for a custom pause. Omit it or pass `0` for the API default. Workers can still send requests in parallel. |
 | `user_agent` | str | None | Custom User-Agent string (ignored when `unblocker=True`) |
 | `max_concurrency` | int | None | Maximum concurrent crawl requests |
 | `rendering_delay` | int | None | Wait time in ms after page load before extraction (0-25000). `0` disables browser rendering |
@@ -73,6 +73,16 @@ from scrapfly import (
 | `webhook_name` | str | None | Name of webhook configured in dashboard |
 | `webhook_events` | list[str] | None | Events to subscribe to (e.g., `crawler_started`, `crawler_url_visited`, `crawler_finished`) |
 | `max_api_credit` | int | None | Maximum API credits to spend on this crawl |
+
+### Crawl pace and page retries
+
+For a small server, start with `max_concurrency=1` and `delay=1000` (one second after each page). Lower concurrency or increase the delay if the site slows down. When the crawler respects `robots.txt`, a `Crawl-delay` directive for the seed URL takes precedence over the configured pause. The crawler also reduces concurrency automatically when enough recent page attempts end with website timeouts, temporary connection refusals, HTTP 429, or HTTP 5xx.
+
+- Website timeouts get up to five retries after 2, 4, 8, 16, and 32 seconds.
+- Temporary website connection refusals get up to three retries after 5, 15, and 45 seconds. A refusal because the port has no service ends the page.
+- A final HTTP 5xx marks the page failed. Some 5xx responses can be retried within the individual scrape before it reports the result to the crawler.
+
+The retry limit counts earlier retries for the same URL across failure types. The crawler may stop retrying early if the crawl ends or if enough pages fail without a success. See [Crawler troubleshooting](https://scrapfly.io/docs/crawler-api/troubleshoot#high-failure-rate) for details.
 
 ### Webhook Events
 
