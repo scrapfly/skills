@@ -144,7 +144,7 @@ result = client.scrape(ScrapeConfig(
 ```python
 result = client.scrape(ScrapeConfig(
     url="https://web-scraping.dev/products",
-    format="markdown", # other supported formats are: json, text, clean_html 
+    format="markdown", # other supported formats are: json, text, clean_html
 ))
 print(result.content)
 ```

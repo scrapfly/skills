@@ -109,7 +109,7 @@ Pass a Python dict to extract once without saving. Useful for one-off scripts an
 ```python
 extraction_template = {
     "source": "html",
-    "selectors": [    
+    "selectors": [
         {
             "name": "title",
             "query": "h3.product-title::text",
@@ -135,7 +135,7 @@ extraction_template = {
         },
         {
             "name": "variants",
-          	"query": "div.variants",
+            "query": "div.variants",
             "type": "css",
             "nested": [
                 {
@@ -156,7 +156,7 @@ extraction_template = {
             "name": "reviews",
             "query": "div.review>p::text",
             "type": "css",
-            "multiple": True,            
+            "multiple": True,
         }
     ]
 }
@@ -293,7 +293,7 @@ html = api_response.content
 # refer to the docs for more details: https://scrapfly.io/docs/extraction-api/rules-and-template#rules
 extraction_template = {
     "source": "html",
-    "selectors": [    
+    "selectors": [
         {
             "name": "title",
             "query": "h3.product-title::text",
@@ -319,7 +319,7 @@ extraction_template = {
         },
         {
             "name": "variants",
-          	"query": "div.variants",
+            "query": "div.variants",
             "type": "css",
             "nested": [
                 {
@@ -340,7 +340,7 @@ extraction_template = {
             "name": "reviews",
             "query": "div.review>p::text",
             "type": "css",
-            "multiple": True,            
+            "multiple": True,
         }
     ]
 }
