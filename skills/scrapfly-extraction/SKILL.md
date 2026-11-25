@@ -45,12 +45,13 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `url` | str | None | Base URL for resolving relative links in HTML |
 | `charset` | str | None | Document encoding (auto-detected if omitted) |
 | `extraction_prompt` | str | None | Natural language instruction for LLM extraction |
-| `extraction_model` | str | None | Pre-trained model: `"product"`, `"article"`, `"review_list"`, `"real_estate_listing"` |
-| `extraction_template` | str | None | Custom template name or inline template definition |
+| `extraction_model` | str | None | Pre-trained model: `"product"`, `"article"`, `"review_list"`, `"real_estate_property_listing"` |
+| `extraction_template` | str | None | Slug of a template saved on Scrapfly |
+| `extraction_ephemeral_template` | dict | None | Inline template definition |
 | `timeout` | int | None | Processing timeout in seconds (60-155) |
-| `webhook_name` | str | None | Webhook name for async processing |
+| `webhook` | str | None | Webhook name for async processing |
 
-**You must provide exactly one of:** `extraction_prompt`, `extraction_model`, or `extraction_template`.
+**You must provide exactly one of:** `extraction_prompt`, `extraction_model`, `extraction_template`, or `extraction_ephemeral_template`.
 
 ### Three Extraction Methods
 
@@ -379,7 +380,7 @@ except ScrapflyError as e:
 
 ## Important Notes
 
-- Provide exactly one extraction method per request: `extraction_prompt`, `extraction_model`, or `extraction_template`
+- Provide exactly one extraction method per request: `extraction_prompt`, `extraction_model`, `extraction_template`, or `extraction_ephemeral_template`
 - For LLM prompts, be specific about the desired output format (e.g., "as JSON")
 - The `url` parameter helps resolve relative links in HTML but is not required
 - For large documents, consider using `format="markdown"` or `format="text"` in the scrape step first to reduce token usage

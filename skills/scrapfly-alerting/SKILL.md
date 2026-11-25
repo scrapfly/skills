@@ -9,7 +9,7 @@ description: >-
   on ASP block rate", "watch a specific domain", or any task involving the
   Scrapfly alerting product.
   Covers the three call paths: REST API, MCP `alert_*` tools, and the
-  `scrapfly alert` CLI subcommand. Enterprise plan feature.
+  `scrapfly alert` CLI subcommand. Open beta, available to all accounts.
 ---
 
 # Scrapfly Alerting
@@ -38,8 +38,7 @@ account behavior, then validate against history before committing.
 
 ## Prerequisites
 
-- Enterprise plan (the Monitoring API the threshold-discovery flow
-  depends on is Enterprise-only).
+- Alerting is in open beta and available to all accounts.
 - A valid Scrapfly API key (`scp-live-...`). The MCP and CLI surfaces
   act in the project of the api-key, the only project a key reaches
   alerts in: an alert of another project is listed, created or changed
@@ -92,7 +91,7 @@ side-effect; write tools require `confirm=true` to commit.
 | `alert_get` | read | Full alert row including the per-alert HMAC signing key for webhook channels. |
 | `alert_preview` | read | Replay an unsaved rule against history. Use to validate the threshold before `alert_create`. |
 | `alert_create` | write (confirm) | Persist a new alert in the api-key's project. Leave `project_uuid` empty. |
-| `alert_update` | write (confirm) | Patch fields. Server auto-snoozes for `sustained_minutes` after a successful edit. |
+| `alert_update` | write (confirm) | Patch fields. A rule-changing edit auto-snoozes for `sustained_minutes`; cosmetic, channel and lifecycle edits do not. |
 | `alert_delete` | write (confirm) | Permanent. |
 | `alert_snooze` | write (confirm) | Mute notifications. Pass `minutes:N` OR `until_resolved:true`. |
 | `alert_unsnooze` | write (confirm) | Clear active snooze. |
@@ -171,7 +170,7 @@ scrapfly alert create \
   --threshold 95 \
   --sustained-minutes 10 \
   --channel email:ops@example.com \
-  --channel webhook:https://hooks.example.com/scrapfly
+  --channel webhook:https://httpbin.dev/post
 
 # Or from a version-controlled file (IaC-style)
 scrapfly alert create --file ./alerts/success_rate.json
@@ -208,7 +207,7 @@ Content-Type: application/json
   "sustained_minutes": 10,
   "notify_channels": [
     {"kind": "email", "target": "ops@example.com"},
-    {"kind": "webhook", "target": "https://hooks.example.com/scrapfly"}
+    {"kind": "webhook", "target": "https://httpbin.dev/post"}
   ]
 }
 ```
@@ -235,7 +234,7 @@ Each channel has a `kind` and a `target`:
 | Kind | Target | Notes |
 |------|--------|-------|
 | `email` | RFC 5322 address | Delivered via the Scrapfly mailer. Subject carries the alert name and the breach value. |
-| `webhook` | HTTPS URL | POST with HMAC-SHA256 signature in `X-Scrapfly-Signature`. Per-alert key generated on create; read it from `alert_get` or the create response. |
+| `webhook` | HTTPS URL | POST with HMAC-SHA256 signature in `X-Scrapfly-Webhook-Signature`. Per-alert key generated on create; read it from `alert_get` or the create response. |
 | `inapp` | empty string | Surfaces in the dashboard's bell-icon notification panel. |
 
 The dedup layer suppresses re-fires that fall in the same minute
@@ -273,7 +272,7 @@ on `state`):
 - `ERR::ALERT::PROJECT_NOT_FOUND` — `project_uuid` is not the api-key's project: the agent passed `account_id` by mistake, or another project of the account, which a key never reaches. Fix: omit the field, and use the other project's API key for its alerts.
 - `ERR::ALERT::NOT_FOUND` — alert doesn't exist OR isn't yours. The server collapses both cases to prevent enumeration. Don't try to distinguish.
 - `ERR::ALERT::EVAL_TIMEOUT` — the preview/series query took too long. Reduce `range_minutes`.
-- `ERR::ALERT::INTERNAL` — generic server-side failure; check the response body's `details` field.
+- `ERR::ALERT::INTERNAL` — generic server-side failure; check the response body's `reason` field.
 
 ## Related skills
 

@@ -60,7 +60,7 @@ from scrapfly import (
 | `max_concurrency` | int | None | Maximum concurrent crawl requests |
 | `rendering_delay` | int | None | Wait time in ms after page load before extraction (0-25000). `0` disables browser rendering |
 | `use_sitemaps` | bool | False | Discover URLs from `sitemap.xml` when available |
-| `respect_robots_txt` | bool | False | Respect `robots.txt` rules and `Disallow` directives |
+| `respect_robots_txt` | bool | None (API default `true`) | Respect `robots.txt` rules and `Disallow` directives. The SDK omits the parameter unless explicitly set |
 | `ignore_no_follow` | bool | False | Ignore `rel="nofollow"` attributes on links |
 | `cache` | bool | False | Enable cache layer for crawled pages |
 | `cache_ttl` | int | None | Cache time-to-live in seconds (0-604800) |

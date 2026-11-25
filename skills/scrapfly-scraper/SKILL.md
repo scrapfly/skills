@@ -56,7 +56,7 @@ client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
 | `country` | str | None | Proxy country (ISO 3166-1 alpha-2, e.g. `"us"`, `"de"`) |
 | `proxy_pool` | str | `"public_datacenter_pool"` | Proxy pool: `"public_datacenter_pool"` or `"public_residential_pool"` |
 | `session` | str | None | Session ID to persist cookies/fingerprint across requests |
-| `session_sticky_proxy` | bool | False | Keep the same proxy IP for a given `session` |
+| `session_sticky_proxy` | bool | None (API default `true` when `session` is set) | Keep the same proxy IP for a given `session`. The SDK omits the parameter unless explicitly set |
 | `unblocker` | bool | False | Enable the Unblocker anti-bot bypass. `asp` is the permanently supported deprecated alias; when both are supplied, `asp` wins |
 | `render_js` | bool | False | Enable headless browser JavaScript rendering (+5 credits) |
 | `rendering_wait` | int | None | Wait time in ms after page load (requires `render_js=True`) |

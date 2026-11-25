@@ -107,11 +107,8 @@ scrapfly browser eval 'document.body.innerText'
 scrapfly browser close                             # daemon + remote release
 ```
 
-When running against Scrapfly's custom browser, `fill` / `click` /
-`wait` / `slide` automatically use the **Antibot** CDP domain for
-human-like timing; `content` uses **Page.getRenderedContent** which
-inlines iframe content. Against a non-Scrapfly browser, the CLI falls
-back to raw `Input.*` events.
+On a Scrapfly browser, `content` returns the fully rendered HTML with
+iframe content inlined unless `--skip-iframes` is set.
 
 **Path E (LLM agent):** `scrapfly agent "<task>" --url <target>` runs an
 autonomous loop. The model picks tool calls (open, snapshot, click, fill,
@@ -129,7 +126,7 @@ with `?key=<API_KEY>`. Official SDKs: Python, TypeScript, Go, Rust. See
 **Path G (Alerting on account metrics):** `scrapfly alert ...` defines
 threshold rules on Scrapfly's monitoring metrics (success rate, block
 rate, error count, cost, latency, ...) and routes notifications via
-email, webhook, or in-app. Enterprise plan.
+email, webhook, or in-app. Open beta, available to all accounts.
 
 ```bash
 # Discover legal metrics
@@ -146,7 +143,7 @@ scrapfly alert create \
   --metric scrape.success_rate --comparator lt --threshold 95 \
   --sustained-minutes 10 \
   --channel email:ops@example.com \
-  --channel webhook:https://hooks.example.com/scrapfly
+  --channel webhook:https://httpbin.dev/post
 ```
 
 `alert list / get / update / snooze / unsnooze / test / delete / series
@@ -167,7 +164,7 @@ scrapfly scrape schedule create --cron "0 6 * * *" \
 
 # Interval schedule with an inline payload
 scrapfly crawl schedule create --interval 6 --unit hour \
-  --webhook my-hook --config-inline '{"url":"https://example.com"}'
+  --webhook my-hook --config-inline '{"url":"https://web-scraping.dev/products"}'
 
 # Cross-product lifecycle (top-level group)
 scrapfly schedule list [--status ACTIVE|PAUSED|CANCELLED]
@@ -247,15 +244,15 @@ body directly to stdout with no envelope (handy for pipes).
 |---|---|
 | `browser navigate <url>` | Page.navigate + wait for load |
 | `browser snapshot` | AXTree with refs (`e1`, `e2`, …) + `ax_node_id` + `backend_node_id` |
-| `browser click <locator>` | Antibot.clickOn on CSS/XPath/axNodeId; raw click for refs |
-| `browser fill <locator> <value> [--clear --wpm N]` | Antibot.fill on CSS/XPath/axNodeId; Input.insertText for refs |
+| `browser click <locator>` | Click a CSS/XPath/AX node locator or snapshot ref |
+| `browser fill <locator> <value> [--clear --wpm N]` | Fill a field, optionally clearing it and setting typing speed |
 | `browser click-ai <description>` | Resolve the target from a natural-language description via the LLM, then click |
 | `browser fill-ai <description> <value>` | Resolve the target via the LLM, then fill |
-| `browser wait <selector> [--visible --timeout-ms N]` | Antibot.waitForElement (native, no JS poll) |
-| `browser slide <source> --target <sel> \| --distance <px>` | Antibot.clickAndSlide (slider captchas) |
-| `browser scroll <direction> [--amount px --ref e3]` | Input wheel event |
-| `browser screenshot [--fullpage]` | PNG via Page.captureScreenshot; use `-o/-O` for the file |
-| `browser content [--raw] [--skip-iframes]` | Page.getRenderedContent - HTML with iframes inlined |
+| `browser wait <selector> [--visible --timeout-ms N]` | Wait for an element, optionally requiring visibility |
+| `browser slide <source> --target <sel> \| --distance <px>` | Drag a slider to a target or by a distance |
+| `browser scroll <direction> [--amount px --ref e3]` | Scroll the page or an element |
+| `browser screenshot [--fullpage]` | Capture a PNG; use `-o/-O` for the file |
+| `browser content [--raw] [--skip-iframes]` | Rendered HTML with iframes inlined by default |
 | `browser eval <js>` | Runtime.evaluate with awaitPromise |
 
 ### Locators
@@ -268,7 +265,7 @@ body directly to stdout with no envelope (handy for pipes).
 - **AI description** - `ai:<plain English>` (or the `click-ai` / `fill-ai`
   shortcuts) lets an LLM resolve the ref from the live snapshot.
 
-For CSS/XPath/axNodeId the CLI goes through Antibot on Scrapfly's browser.
+CSS/XPath/AX node locators and snapshot refs are resolved against the live page.
 
 ### Recordings, extensions
 
@@ -357,12 +354,12 @@ Every documented `CrawlerConfig` field is exposed:
 ```bash
 scrapfly crawl artifact <uuid> --type warc -o crawl.warc
 scrapfly crawl parse warc-list crawl.warc --pretty             # URLs + statuses
-scrapfly crawl parse warc-get crawl.warc https://example.com \
+scrapfly crawl parse warc-get crawl.warc https://web-scraping.dev/products \
   --raw > page.html                                             # body straight to stdout
 
 scrapfly crawl artifact <uuid> --type har -o crawl.har
 scrapfly crawl parse har-list crawl.har --pretty               # request table
-scrapfly crawl parse har-get crawl.har https://example.com/api \
+scrapfly crawl parse har-get crawl.har https://web-scraping.dev/product/1 \
   --raw | jq .                                                  # extract one response
 ```
 
@@ -403,10 +400,10 @@ scrapfly scrape https://web-scraping.dev/product/1 --render-js --proxified \
   | scrapfly extract --content-type text/html --prompt "name, price, sku"
 
 # Screenshot into an auto-named file in a directory
-scrapfly -O ./shots screenshot https://example.com --resolution 1920x1080
+scrapfly -O ./shots screenshot https://web-scraping.dev/products --resolution 1920x1080
 
 # Crawl synchronously with markdown content streaming
-scrapfly crawl run https://example.com --max-pages 20 --content-format markdown
+scrapfly crawl run https://web-scraping.dev/products --max-pages 20 --content-format markdown
 
 # Multi-call browser session: log in, dump rendered HTML, clean up
 scrapfly browser --session demo --session-timeout 1800 start &
