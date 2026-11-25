@@ -287,7 +287,7 @@ print(result.selector.css("div#secret-message::text").get())
 
 ```python
 result = client.scrape(ScrapeConfig(
-    url="https://example.com",
+    url="https://web-scraping.dev",
     cache=True,
     cache_ttl=3600,  # Cache for 1 hour
 ))

@@ -90,7 +90,7 @@ If you have saved a template in the Scrapfly dashboard (Extraction API → Templ
 result = client.extract(ExtractionConfig(
     body=html_content,
     content_type="text/html",
-    url="https://example.com/product/1",
+    url="https://web-scraping.dev/product/1",
     extraction_template="product-card",
 ))
 ```
